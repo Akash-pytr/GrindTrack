@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-500: #f97316; /* Orange-500 */
+  --color-brand-600: #ea580c; /* Orange-600 */
+  --color-brand-100: #ffedd5; /* Orange-100 */
+}
+
+body {
+  @apply bg-[#f3f4f6] dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased transition-colors duration-300;
+}
+
+.gradient-mesh {
+  background-color: #ff0055;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(342,100%,70%,1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(242,100%,73%,1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(11,100%,68%,1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(282,100%,72%,1) 0px, transparent 50%);
+}
+
+/* Custom dark mode gradient overlay for AuthPage */
+.dark .gradient-mesh {
+  background-color: #1e1b4b;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(342,100%,40%,1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(242,100%,43%,1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(11,100%,38%,1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(282,100%,42%,1) 0px, transparent 50%);
+}

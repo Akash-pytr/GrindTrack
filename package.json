@@ -1,13 +1,15 @@
 {
   "name": "grindtrack",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Study Tracker Fullstack SaaS",
   "private": true,
   "scripts": {
-    "dev": "cd frontend && vite",
-    "build": "cd frontend && vite build",
-    "start": "cd frontend && vite preview",
-    "lint": "cd frontend && eslint ."
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
 }
