@@ -61,7 +61,7 @@ export default function TrackerPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, type: "spring", bounce: 0.4 }}
-        className="bg-[#ffffff] dark:bg-[#000000] border border-[#e2e8f0] dark:border-[#27272a] rounded-[2rem] p-12 shadow-sm w-full max-w-2xl flex flex-col items-center justify-center relative transition-colors duration-500"
+        className="bg-[#ffffff] dark:bg-[#000000] border border-[#e2e8f0] dark:border-[#27272a] dark:neon-border-orange rounded-[2rem] p-12 shadow-sm w-full max-w-2xl flex flex-col items-center justify-center relative transition-colors duration-500 scanline"
       >
         
         {/* Glow underneath the timer */}
@@ -69,10 +69,10 @@ export default function TrackerPage() {
           {isActive && !isDistracted && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 0.3, scale: 1.1 }}
+              animate={{ opacity: 0.5, scale: 1.1 }}
               exit={{ opacity: 0, scale: 0.5 }}
-              transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-              className="absolute w-80 h-80 bg-brand-500/50 rounded-full blur-[80px] pointer-events-none"
+              transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
+              className="absolute w-80 h-80 bg-brand-500/60 rounded-full blur-[100px] pointer-events-none dark:shadow-neon-orange"
             />
           )}
         </AnimatePresence>
@@ -88,7 +88,7 @@ export default function TrackerPage() {
               strokeDasharray="295"
               strokeDashoffset={isActive ? 295 * (1 - (activeTime % 1500) / 1500) : 295}
               strokeLinecap="round"
-              className="filter drop-shadow-[0_0_8px_rgba(249,115,22,0.6)]"
+              className="filter drop-shadow-[0_0_12px_rgba(249,115,22,0.9)]"
               transition={{ ease: "linear" }}
             />
           </svg>
@@ -138,7 +138,7 @@ export default function TrackerPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate('/focus', { state: { activeTime, distractions, isActive } })}
-                  className="w-48 h-14 rounded-xl bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-black text-lg flex items-center justify-center gap-3 shadow-lg hover:bg-slate-900 dark:hover:bg-white transition-all"
+                  className="w-48 h-14 rounded-xl bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-black text-lg flex items-center justify-center gap-3 shadow-lg hover:bg-slate-900 dark:hover:bg-white transition-all dark:shadow-neon-orange"
                 >
                   <Maximize strokeWidth={3} size={20} />
                   MAXIMIZE

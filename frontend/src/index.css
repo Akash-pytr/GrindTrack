@@ -56,3 +56,43 @@ body {
     radial-gradient(at 100% 100%, hsla(355, 100%, 10%, 1) 0px, transparent 50%),
     radial-gradient(at 0% 100%, hsla(340, 100%, 15%, 1) 0px, transparent 50%);
 }
+
+/* Neon Effects */
+.dark .shadow-neon-orange {
+  box-shadow: 0 0 15px rgba(249, 115, 22, 0.4), 0 0 30px rgba(249, 115, 22, 0.2);
+}
+
+.dark .shadow-neon-blue {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), 0 0 30px rgba(59, 130, 246, 0.2);
+}
+
+.dark .shadow-neon-purple {
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), 0 0 30px rgba(168, 85, 247, 0.2);
+}
+
+.dark .neon-border-orange {
+  border-color: rgba(249, 115, 22, 0.5);
+  box-shadow: inset 0 0 10px rgba(249, 115, 22, 0.2), 0 0 10px rgba(249, 115, 22, 0.2);
+}
+
+.dark .neon-text-orange {
+  text-shadow: 0 0 8px rgba(249, 115, 22, 0.6);
+}
+
+/* Scanning line effect for cards */
+.dark .scanline::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.4), transparent);
+  animation: scan 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}

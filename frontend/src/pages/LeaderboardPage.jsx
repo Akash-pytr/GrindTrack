@@ -51,7 +51,7 @@ export default function LeaderboardPage() {
           initial={{ scale: 0, rotate: -180, filter: 'blur(10px)' }}
           animate={{ scale: 1, rotate: 0, filter: 'blur(0px)' }}
           transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className="p-4 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-xl shadow-yellow-500/10 border border-white/50 dark:border-slate-800/50 rounded-2xl transition-colors duration-500"
+          className="p-4 bg-white/70 dark:bg-[#000000] backdrop-blur-xl shadow-xl shadow-yellow-500/10 border border-white/50 dark:border-[#27272a] dark:neon-border-orange rounded-2xl transition-colors duration-500"
         >
           <Trophy className="text-yellow-500 w-10 h-10 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
         </motion.div>
@@ -71,7 +71,7 @@ export default function LeaderboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-3xl border border-white/50 dark:border-slate-800/50 rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden p-4 transition-colors duration-500"
+        className="bg-white/60 dark:bg-[#000000] backdrop-blur-3xl border border-white/50 dark:border-[#27272a] dark:neon-border-orange rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden p-4 transition-colors duration-500"
       >
         {users.length === 0 ? (
           <div className="p-16 text-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-sm">No data available yet. Start tracking to claim #1!</div>
@@ -90,7 +90,7 @@ export default function LeaderboardPage() {
                 whileHover={{ scale: 1.02 }}
                 key={user._id} 
                 className={`flex items-center justify-between p-6 rounded-3xl transition-all cursor-default 
-                  ${index === 0 ? 'bg-gradient-to-r from-orange-500/10 to-yellow-500/5 dark:from-orange-500/20 dark:to-yellow-500/10 border border-orange-500/20 dark:border-orange-500/30 shadow-lg shadow-orange-500/5' : 'bg-white/40 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800/80 border border-white/50 dark:border-slate-700/50 shadow-sm'}`}
+                  ${index === 0 ? 'bg-gradient-to-r from-orange-500/10 to-yellow-500/5 dark:from-orange-500/20 dark:to-yellow-500/10 border border-orange-500/20 dark:border-orange-500/60 shadow-lg shadow-orange-500/5 dark:shadow-neon-orange' : 'bg-white/40 dark:bg-[#18181b]/50 hover:bg-white dark:hover:bg-[#18181b] border border-white/50 dark:border-[#27272a] shadow-sm hover:dark:shadow-neon-blue transition-all'}`}
               >
                 <div className="flex items-center gap-6">
                   {/* Rank Badge */}

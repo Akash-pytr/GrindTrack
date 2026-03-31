@@ -72,7 +72,7 @@ const Layout = ({ children }) => {
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
               >
                 {isActive && (
-                   <motion.div layoutId="activeNavHighlight" className="absolute inset-0 bg-brand-500 rounded-lg z-0 shadow-lg shadow-brand-500/30" />
+                   <motion.div layoutId="activeNavHighlight" className="absolute inset-0 bg-brand-500 rounded-lg z-0 shadow-lg shadow-brand-500/30 dark:shadow-neon-orange" />
                 )}
                 <Icon size={18} className={`relative z-10 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500'}`} />
                 <span className="relative z-10 font-[600]">{item.label}</span>

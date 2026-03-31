@@ -29,12 +29,12 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fce5df] dark:bg-[#1a1525] flex p-4 items-center justify-center transition-colors duration-300">
+    <div className="min-h-screen bg-[#fce5df] dark:bg-[#000000] flex p-4 items-center justify-center transition-colors duration-300">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.6, type: 'spring', bounce: 0.3 }}
-        className="w-full max-w-5xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl flex overflow-hidden min-h-[600px] border border-transparent dark:border-slate-800 transition-colors duration-300"
+        className="w-full max-w-5xl bg-white dark:bg-[#000000] rounded-3xl shadow-2xl flex overflow-hidden min-h-[600px] border border-transparent dark:border-[#27272a] dark:neon-border-orange transition-colors duration-300 scanline"
       >
         
         {/* Left Form Side */}
@@ -109,7 +109,7 @@ export default function AuthPage() {
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              className="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold p-4 rounded-xl transition-colors shadow-lg shadow-brand-500/30 mt-8"
+              className="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold p-4 rounded-xl transition-colors shadow-lg shadow-brand-500/30 dark:shadow-neon-orange mt-8"
             >
               {isLogin ? 'Sign In' : 'Register Now'}
             </motion.button>
@@ -131,7 +131,7 @@ export default function AuthPage() {
           <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-[2px] transition-colors"></div>
           
           <div className="relative z-10 w-full flex justify-end">
-            <div className="flex items-center gap-2 bg-white/20 dark:bg-black/20 backdrop-blur-md px-4 py-2 rounded-full text-white font-semibold shadow-sm transition-colors">
+            <div className="flex items-center gap-2 bg-white/20 dark:bg-[#000000]/40 backdrop-blur-md px-4 py-2 rounded-full text-white font-semibold shadow-sm dark:shadow-neon-blue transition-colors border border-transparent dark:border-blue-500/50">
               <CheckCircle className="w-5 h-5 text-white" />
               <span>GrindTrack</span>
             </div>

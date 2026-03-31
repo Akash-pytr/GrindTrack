@@ -75,7 +75,7 @@ export default function AnalyticsPage() {
         className="grid grid-cols-1 lg:grid-cols-2 gap-8"
       >
         
-        <motion.div variants={cardItem} className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/50 dark:border-slate-800/50 p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group col-span-1 lg:col-span-2 transition-all duration-500 hover:shadow-2xl">
+        <motion.div variants={cardItem} className="bg-white/60 dark:bg-[#000000] border border-white/50 dark:border-[#27272a] dark:neon-border-orange p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group col-span-1 lg:col-span-2 transition-all duration-500 hover:shadow-2xl scanline">
           <div className="flex justify-between items-center mb-8">
             <div>
               <h3 className="text-xl font-black text-slate-800 dark:text-white transition-colors tracking-tight">Weekly Progress Trace</h3>
@@ -109,7 +109,7 @@ export default function AnalyticsPage() {
                     fontWeight: '900'
                   }}
                   itemStyle={{ color: '#ea580c', fontWeight: '900' }}
-                  cursor={{ stroke: isDarkMode ? '#475569' : '#cbd5e1', strokeWidth: 2, strokeDasharray: '6 6' }}
+                  cursor={{ stroke: isDarkMode ? '#f97316' : '#cbd5e1', strokeWidth: 2, strokeDasharray: '6 6' }}
                 />
                 <Area 
                   type="monotone" 
@@ -118,14 +118,14 @@ export default function AnalyticsPage() {
                   strokeWidth={4} 
                   fillOpacity={1} 
                   fill="url(#colorFocus)" 
-                  activeDot={{ r: 8, fill: '#f97316', stroke: isDarkMode ? '#1e293b' : '#fff', strokeWidth: 3 }} 
+                  activeDot={{ r: 8, fill: '#f97316', stroke: isDarkMode ? '#000000' : '#fff', strokeWidth: 3 }} 
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </motion.div>
 
-        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/50 dark:border-slate-800/50 p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-500">
+        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-white/60 dark:bg-[#000000] border border-white/50 dark:border-[#27272a] dark:neon-border-orange p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-500 scanline">
           <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white mb-6 border-b border-slate-200/50 dark:border-slate-800/50 pb-4 transition-colors">Today's Breakdown</h3>
           
           <div className="space-y-8 mt-6">
@@ -138,7 +138,7 @@ export default function AnalyticsPage() {
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min((dailyStats?.totalActiveTime / 14400) * 100, 100)}%` }}
                   transition={{ duration: 1.5, ease: [0.34, 1.56, 0.64, 1], delay: 0.2 }}
-                  className="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full relative z-10 shadow-[0_0_15px_rgba(249,115,22,0.8)]" 
+                  className="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full relative z-10 shadow-[0_0_20px_rgba(249,115,22,1)]" 
                 ></motion.div>
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvc3ZnPg==')] opacity-50 z-20 pointer-events-none"></div>
               </div>
@@ -161,7 +161,7 @@ export default function AnalyticsPage() {
           </div>
         </motion.div>
 
-        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/50 dark:border-slate-800/50 p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-500 flex flex-col items-center justify-center">
+        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-white/60 dark:bg-[#000000] border border-white/50 dark:border-[#27272a] dark:neon-border-orange p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-500 flex flex-col items-center justify-center scanline">
           <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white mb-6 w-full text-center border-b border-slate-200/50 dark:border-slate-800/50 pb-4 transition-colors">Distraction Insights</h3>
           
           <div className="flex items-center justify-center mt-6 flex-1 w-full relative">

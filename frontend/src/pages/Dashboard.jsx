@@ -65,15 +65,15 @@ export default function Dashboard() {
         className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
       >
         {/* Card 1 */}
-        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-[#ffffff] dark:bg-[#000000] rounded-xl p-6 shadow-sm dark:shadow-none border border-[#e2e8f0] dark:border-[#27272a] transition-all duration-300 relative overflow-hidden group">
+        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-[#ffffff] dark:bg-[#000000] rounded-xl p-6 shadow-sm dark:shadow-none border border-[#e2e8f0] dark:border-[#27272a] dark:neon-border-orange transition-all duration-300 relative overflow-hidden group scanline">
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-slate-600 dark:text-slate-400 font-bold text-sm transition-colors">Focus Minutes</h3>
-            <div className="p-2.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg transition-colors">
+            <div className="p-2.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg transition-colors dark:shadow-neon-blue">
               <Eye size={20} />
             </div>
           </div>
           <div className="flex items-baseline gap-2 mb-2">
-            <h2 className="text-4xl font-black text-slate-800 dark:text-white transition-colors tracking-tighter">
+            <h2 className="text-4xl font-black text-slate-800 dark:text-white transition-colors tracking-tighter dark:neon-text-orange">
               <AnimatedCounter value={Math.floor((stats?.totalActiveTime || 0)/60)} />
             </h2>
             <span className="text-slate-400 dark:text-slate-500 font-bold">m</span>
@@ -83,15 +83,15 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Card 2 */}
-        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-gradient-to-br from-emerald-500/5 to-teal-500/0 dark:from-emerald-950/20 dark:to-teal-950/0 rounded-xl p-6 shadow-sm dark:shadow-none border border-[#e2e8f0] dark:border-[#27272a] hover:border-emerald-500/50 dark:hover:border-emerald-500/50 transition-all duration-300 relative overflow-hidden group">
+        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-gradient-to-br from-emerald-500/5 to-teal-500/0 dark:from-emerald-950/20 dark:to-teal-950/0 rounded-xl p-6 shadow-sm dark:shadow-none border border-[#e2e8f0] dark:border-[#27272a] dark:neon-border-orange hover:border-emerald-500/50 dark:hover:border-emerald-500/50 transition-all duration-300 relative overflow-hidden group scanline">
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-emerald-800 dark:text-emerald-400 font-bold text-sm transition-colors">Focus Score</h3>
-            <div className="p-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg transition-colors">
+            <div className="p-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg transition-colors dark:shadow-neon-blue">
               <CheckSquare size={20} />
             </div>
           </div>
           <div className="flex items-baseline gap-2 mb-2">
-            <h2 className="text-4xl font-black text-emerald-900 dark:text-white transition-colors tracking-tighter">
+            <h2 className="text-4xl font-black text-emerald-900 dark:text-white transition-colors tracking-tighter dark:neon-text-orange">
               <AnimatedCounter value={stats?.focusScore || 0} />
             </h2>
             <span className="text-emerald-700/50 dark:text-emerald-400/50 font-bold text-xl">/ 100</span>
@@ -100,14 +100,14 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Card 3 */}
-        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-[#ffffff] dark:bg-[#000000] rounded-xl p-6 shadow-sm dark:shadow-none border border-[#e2e8f0] dark:border-[#27272a] transition-all duration-300 relative overflow-hidden group">
+        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-[#ffffff] dark:bg-[#000000] rounded-xl p-6 shadow-sm dark:shadow-none border border-[#e2e8f0] dark:border-[#27272a] dark:neon-border-orange transition-all duration-300 relative overflow-hidden group scanline">
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-slate-600 dark:text-slate-400 font-bold text-sm transition-colors">Distractions</h3>
-            <div className="p-2.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg transition-colors">
+            <div className="p-2.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg transition-colors dark:shadow-neon-purple">
               <Users size={20} />
             </div>
           </div>
-          <h2 className="text-4xl font-black text-slate-800 dark:text-white mb-2 transition-colors tracking-tighter">
+          <h2 className="text-4xl font-black text-slate-800 dark:text-white mb-2 transition-colors tracking-tighter dark:neon-text-orange">
              <AnimatedCounter value={stats?.distractions || 0} />
           </h2>
           <p className="text-red-500 dark:text-red-400 text-xs font-bold mt-2 inline-block transition-colors">-8.20% from Yesterday</p>
