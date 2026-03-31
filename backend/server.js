@@ -55,7 +55,8 @@ io.on('connection', (socket) => {
     
     // Track user
     if (!activeRooms[roomId]) {
-      activeRooms[roomId] = { users: new Set(), userNames: new Map() };
+      // The first person to join a room becomes the owner
+      activeRooms[roomId] = { users: new Set(), userNames: new Map(), ownerId: socket.id };
     }
     activeRooms[roomId].users.add(socket.id);
     activeRooms[roomId].userNames.set(socket.id, userName);
@@ -69,7 +70,7 @@ io.on('connection', (socket) => {
 
     // Send active user list to the person who joined
     const currentUsers = Array.from(activeRooms[roomId].userNames.entries()).map(([id, name]) => ({ id, name }));
-    io.to(roomId).emit('room-users', currentUsers);
+    io.to(roomId).emit('room-users', { users: currentUsers, ownerId: activeRooms[roomId].ownerId });
     
     // Broadcast lobby updates
     const roomCounts = {};
@@ -78,6 +79,52 @@ io.on('connection', (socket) => {
     }
     io.emit('lobby-state', roomCounts);
   });
+
+  // Relays signal (Offer/Answer/Candidate) to a specific remote peer for WebRTC
+  socket.on('rtc-signal', ({ to, signal, from, fromName }) => {
+    io.to(to).emit('rtc-signal', { from, signal, fromName });
+  });
+
+  // Moderator Power: Kick a user from the VC
+  socket.on('kick-user', ({ roomId, targetId }) => {
+    const room = activeRooms[roomId];
+    if (room && room.ownerId === socket.id) {
+       io.to(targetId).emit('kicked', { message: 'You have been removed from the room by the moderator.' });
+       
+       // Force disconnect the target from the room on the server side
+       const targetSocket = io.sockets.sockets.get(targetId);
+       if (targetSocket) {
+          targetSocket.leave(roomId);
+          handleDisconnectFromRoom(targetSocket, roomId);
+       }
+    }
+  });
+
+  // Common function to handle room exit/disconnect logic
+  const handleDisconnectFromRoom = (sock, roomId) => {
+     const roomData = activeRooms[roomId];
+     if (roomData && roomData.users.has(sock.id)) {
+        const userName = roomData.userNames.get(sock.id) || 'Someone';
+        roomData.users.delete(sock.id);
+        roomData.userNames.delete(sock.id);
+        
+        sock.to(roomId).emit('user-left', { 
+          id: sock.id, 
+          message: `${userName} packed up and left.` 
+        });
+
+        // Update remaining users (and current owner)
+        const remainingUsers = Array.from(roomData.userNames.entries()).map(([id, name]) => ({ id, name }));
+        io.to(roomId).emit('room-users', { users: remainingUsers, ownerId: roomData.ownerId });
+
+        // Clean up empty custom rooms
+        if (roomData.users.size === 0) {
+          delete activeRooms[roomId];
+        }
+        
+        broadcastLobbyState();
+     }
+  };
 
   // Handle chat messages within a VC
   socket.on('send-message', ({ roomId, message, userName }) => {
@@ -91,35 +138,8 @@ io.on('connection', (socket) => {
 
   // Handle exiting room or disconnecting
   const handleDisconnect = () => {
-    for (const [roomId, roomData] of Object.entries(activeRooms)) {
-      if (roomData.users.has(socket.id)) {
-        const userName = roomData.userNames.get(socket.id) || 'Someone';
-        roomData.users.delete(socket.id);
-        roomData.userNames.delete(socket.id);
-        
-        socket.leave(roomId);
-        
-        socket.to(roomId).emit('user-left', { 
-          id: socket.id, 
-          message: `${userName} packed up and left.` 
-        });
-
-        // Update remaining users
-        const remainingUsers = Array.from(roomData.userNames.entries()).map(([id, name]) => ({ id, name }));
-        io.to(roomId).emit('room-users', remainingUsers);
-
-        // Clean up empty custom rooms (except hardcoded base ones if we want to)
-        if (roomData.users.size === 0) {
-          delete activeRooms[roomId];
-        }
-
-        // Broadcast lobby updates
-        const roomCounts = {};
-        for (const [rId, data] of Object.entries(activeRooms)) {
-          roomCounts[rId] = data.users.size;
-        }
-        io.emit('lobby-state', roomCounts);
-      }
+    for (const roomId of Object.keys(activeRooms)) {
+      handleDisconnectFromRoom(socket, roomId);
     }
   };
 
