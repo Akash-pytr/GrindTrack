@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useTheme } from './context/ThemeContext';
-import { BookOpen, BarChart3, Trophy, LogOut, CheckCircle, Clock, Sun, Moon } from 'lucide-react';
+import { BookOpen, BarChart3, Trophy, LogOut, CheckCircle, Clock, Sun, Moon, Library } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { pageVariants, pageTransition } from './utils/animations';
 
@@ -11,6 +11,9 @@ import TrackerPage from './pages/TrackerPage';
 import FocusMode from './pages/FocusMode';
 import AnalyticsPage from './pages/AnalyticsPage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import LibrariesPage from './pages/LibrariesPage';
+import RoomView from './pages/RoomView';
+import BackgroundBlobs from './components/BackgroundBlobs';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -19,67 +22,77 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Layout component wraps the side nav and main content
+// High Contrast Layout
 const Layout = ({ children }) => {
   const { logout } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
   const location = useLocation();
 
   const navItems = [
-    { path: '/', label: 'Dashboard', icon: BookOpen },
-    { path: '/tracker', label: 'Tracker', icon: Clock },
+    { path: '/', label: 'Overview', icon: BookOpen },
+    { path: '/tracker', label: 'Pomodoro', icon: Clock },
+    { path: '/libraries', label: 'Study Rooms', icon: Library },
     { path: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { path: '/leaderboard', label: 'Hall of Fame', icon: Trophy },
   ];
 
   return (
-    <div className="flex bg-[#f3f4f6] dark:bg-slate-950 h-screen overflow-hidden transition-colors duration-300">
-      {/* Dynamic Sidebar */}
+    <div className="flex bg-[#ffffff] dark:bg-[#09090b] h-screen overflow-hidden transition-colors duration-500 relative">
+      <BackgroundBlobs />
+      
+      {/* High Contrast Sidebar */}
       <motion.nav 
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col px-4 py-6 z-20 shadow-sm transition-colors duration-300"
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="w-64 bg-[#f8fafc] dark:bg-[#000000] border-r border-[#e2e8f0] dark:border-[#27272a] flex flex-col px-4 py-6 z-20 transition-colors duration-500"
       >
-        <div className="flex items-center gap-3 mb-12 px-2 text-xl font-bold text-slate-800 dark:text-white transition-colors duration-300">
-          <div className="bg-brand-500 w-8 h-8 rounded-lg flex items-center justify-center">
+        <div className="flex items-center gap-3 mb-12 px-2 text-xl font-black text-slate-800 dark:text-white transition-colors duration-500 tracking-tight">
+          <motion.div 
+            whileHover={{ rotate: 180, scale: 1.1 }}
+            transition={{ type: "spring" }}
+            className="bg-brand-500 w-8 h-8 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.6)]"
+          >
             <CheckCircle className="text-white w-5 h-5" />
-          </div>
+          </motion.div>
           GrindTrack
         </div>
 
         <div className="flex flex-col gap-2 flex-1">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname.startsWith(item.path) && (item.path !== '/' || location.pathname === '/');
             const Icon = item.icon;
             return (
               <Link 
                 key={item.path}
                 to={item.path} 
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-bold text-sm relative group
                   ${isActive 
-                    ? 'bg-brand-100 dark:bg-brand-500/20 text-brand-600 dark:text-brand-500' 
-                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    ? 'text-white' 
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
               >
-                <Icon size={18} className={isActive ? 'text-brand-500' : 'text-slate-400 dark:text-slate-500'} />
-                {item.label}
+                {isActive && (
+                   <motion.div layoutId="activeNavHighlight" className="absolute inset-0 bg-brand-500 rounded-lg z-0 shadow-lg shadow-brand-500/30" />
+                )}
+                <Icon size={18} className={`relative z-10 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500'}`} />
+                <span className="relative z-10 font-[600]">{item.label}</span>
               </Link>
             )
           })}
         </div>
 
-        <div className="mt-auto flex flex-col gap-2 border-t border-slate-100 dark:border-slate-800 pt-4 transition-colors duration-300">
+        <div className="mt-auto flex flex-col gap-2 border-t border-slate-200 dark:border-[#27272a] pt-4 transition-colors duration-500">
           <button 
             onClick={toggleTheme}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200 transition-colors font-medium text-sm w-full"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#18181b] hover:text-slate-800 dark:hover:text-slate-200 transition-colors font-bold text-sm w-full"
           >
-            {isDarkMode ? <Sun size={18} className="text-yellow-500" /> : <Moon size={18} className="text-slate-400" />}
+            {isDarkMode ? <Sun size={18} className="text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" /> : <Moon size={18} className="text-slate-400" />}
             {isDarkMode ? 'Light Mode' : 'Dark Mode'}
           </button>
           
           <button 
             onClick={logout}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 text-red-500 dark:text-red-400 transition-colors font-medium text-sm w-full"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 transition-colors font-bold text-sm w-full"
           >
             <LogOut size={18} />
             Logout
@@ -88,10 +101,9 @@ const Layout = ({ children }) => {
       </motion.nav>
       
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto w-full relative bg-[#f8fafc] dark:bg-slate-950 transition-colors duration-300">
-        {/* Subtle top header gradient */}
-        <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-slate-100 dark:from-slate-900 to-transparent pointer-events-none z-0 transition-colors duration-300"></div>
-        <div className="relative z-10 w-full h-full">
+      <main className="flex-1 overflow-y-auto w-full relative z-10">
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#ffffff] dark:from-[#09090b] to-transparent pointer-events-none z-10 transition-colors duration-500"></div>
+        <div className="relative z-20 w-full h-full">
           {children}
         </div>
       </main>
@@ -99,7 +111,6 @@ const Layout = ({ children }) => {
   );
 };
 
-// AnimatedRoutes wrapper handles AnimatePresence for transitions
 const AnimatedRoutes = () => {
   const location = useLocation();
   
@@ -114,7 +125,6 @@ const AnimatedRoutes = () => {
             </motion.div>
           } 
         />
-        
         <Route 
           path="/" 
           element={
@@ -140,10 +150,34 @@ const AnimatedRoutes = () => {
           } 
         />
         <Route 
+          path="/libraries" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <motion.div initial="initial" animate="animate" exit="exit" variants={pageVariants} transition={pageTransition} className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <LibrariesPage />
+                </motion.div>
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/libraries/:roomId" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <motion.div initial="initial" animate="animate" exit="exit" variants={pageVariants} transition={pageTransition} className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <RoomView />
+                </motion.div>
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
           path="/focus" 
           element={
             <ProtectedRoute>
-              <motion.div initial="initial" animate="animate" exit="exit" variants={{initial: {opacity: 0}, animate: {opacity: 1}, exit: {opacity: 0}}} transition={{duration: 0.5}} className="h-full">
+              <motion.div initial="initial" animate="animate" exit="exit" variants={{initial: {opacity: 0, scale: 0.95}, animate: {opacity: 1, scale: 1}, exit: {opacity: 0, scale: 1.05}}} transition={{duration: 0.6, ease: "anticipate"}} className="h-full">
                 <FocusMode />
               </motion.div>
             </ProtectedRoute>

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { staggerContainer, cardItem } from '../utils/animations';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
+import AnimatedCounter from '../components/AnimatedCounter';
 
 const dummyChartData = [
   { name: 'Jan', income: 4000, expense: 2400 },
@@ -40,26 +41,21 @@ export default function Dashboard() {
       <motion.div 
         animate={{ rotate: 360 }} 
         transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-        className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full"
+        className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full shadow-[0_0_15px_rgba(249,115,22,0.5)]"
       />
     </div>
   );
 
-  const formatTime = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    return `${h}h ${m}m`;
-  };
-
   return (
-    <div className="py-8">
+    <div className="py-8 pt-20">
       <motion.div 
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
         className="mb-8"
       >
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-white transition-colors duration-300">Your Study at a Glance</h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 transition-colors duration-300">Real-time snapshot of your focus, distractions, and goals.</p>
+        <h1 className="text-3xl font-black text-slate-800 dark:text-white transition-colors duration-500 tracking-tight">Your Study at a Glance</h1>
+        <p className="text-slate-500 dark:text-slate-400 font-medium mt-1 transition-colors duration-500">Real-time snapshot of your focus, distractions, and goals.</p>
       </motion.div>
       
       <motion.div 
@@ -69,94 +65,122 @@ export default function Dashboard() {
         className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
       >
         {/* Card 1 */}
-        <motion.div variants={cardItem} className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-[#ffffff] dark:bg-[#000000] rounded-xl p-6 shadow-sm dark:shadow-none border border-[#e2e8f0] dark:border-[#27272a] transition-all duration-300 relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="text-slate-600 dark:text-slate-400 font-semibold text-sm transition-colors">Focus Today</h3>
-            <div className="p-2 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg transition-colors">
-              <Eye size={18} />
+            <h3 className="text-slate-600 dark:text-slate-400 font-bold text-sm transition-colors">Focus Minutes</h3>
+            <div className="p-2.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg transition-colors">
+              <Eye size={20} />
             </div>
           </div>
-          <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white mb-2 transition-colors">{formatTime(stats?.totalActiveTime || 0)}</h2>
-          <p className="text-emerald-500 dark:text-emerald-400 text-xs font-semibold bg-emerald-50 dark:bg-emerald-500/10 inline-block px-2 py-1 rounded-full">+5.50% from Yesterday</p>
-          <div className="absolute -right-4 -bottom-4 bg-blue-50 dark:bg-blue-500/5 w-24 h-24 rounded-full blur-2xl group-hover:bg-blue-100 dark:group-hover:bg-blue-500/10 transition-colors pointer-events-none"></div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <h2 className="text-4xl font-black text-slate-800 dark:text-white transition-colors tracking-tighter">
+              <AnimatedCounter value={Math.floor((stats?.totalActiveTime || 0)/60)} />
+            </h2>
+            <span className="text-slate-400 dark:text-slate-500 font-bold">m</span>
+          </div>
+          <p className="text-emerald-500 dark:text-emerald-400 text-xs font-bold mt-2 inline-block transition-colors">+5.50% from Yesterday</p>
+          <div className="absolute -right-4 -bottom-4 bg-blue-500/5 w-24 h-24 rounded-full blur-xl group-hover:bg-blue-500/10 transition-colors duration-700 pointer-events-none"></div>
         </motion.div>
 
         {/* Card 2 */}
-        <motion.div variants={cardItem} className="bg-emerald-50 dark:bg-slate-900/60 rounded-2xl p-6 shadow-sm border border-emerald-100 dark:border-emerald-500/10 hover:shadow-md transition-all duration-300 relative overflow-hidden">
+        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-gradient-to-br from-emerald-500/5 to-teal-500/0 dark:from-emerald-950/20 dark:to-teal-950/0 rounded-xl p-6 shadow-sm dark:shadow-none border border-[#e2e8f0] dark:border-[#27272a] hover:border-emerald-500/50 dark:hover:border-emerald-500/50 transition-all duration-300 relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="text-emerald-800 dark:text-emerald-400 font-semibold text-sm transition-colors">Focus Score</h3>
-            <div className="p-2 bg-white/50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg transition-colors">
-              <CheckSquare size={18} />
+            <h3 className="text-emerald-800 dark:text-emerald-400 font-bold text-sm transition-colors">Focus Score</h3>
+            <div className="p-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg transition-colors">
+              <CheckSquare size={20} />
             </div>
           </div>
-          <h2 className="text-3xl font-extrabold text-emerald-900 dark:text-white mb-2 transition-colors">{stats?.focusScore || 0} / 100</h2>
-          <p className="text-emerald-700 dark:text-emerald-500 text-xs font-semibold transition-colors">+6.20% from Yesterday</p>
-          <div className="absolute right-0 bottom-0 top-0 w-32 bg-emerald-100/50 dark:bg-emerald-500/5 backdrop-blur-md -skew-x-12 opacity-50 transform translate-x-10 pointer-events-none transition-colors"></div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <h2 className="text-4xl font-black text-emerald-900 dark:text-white transition-colors tracking-tighter">
+              <AnimatedCounter value={stats?.focusScore || 0} />
+            </h2>
+            <span className="text-emerald-700/50 dark:text-emerald-400/50 font-bold text-xl">/ 100</span>
+          </div>
+          <p className="text-emerald-600 dark:text-emerald-500 text-xs font-bold mt-2 inline-block transition-colors">+6.20% from Yesterday</p>
         </motion.div>
 
         {/* Card 3 */}
-        <motion.div variants={cardItem} className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-[#ffffff] dark:bg-[#000000] rounded-xl p-6 shadow-sm dark:shadow-none border border-[#e2e8f0] dark:border-[#27272a] transition-all duration-300 relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="text-slate-600 dark:text-slate-400 font-semibold text-sm transition-colors">Distractions</h3>
-            <div className="p-2 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg transition-colors">
-              <Users size={18} />
+            <h3 className="text-slate-600 dark:text-slate-400 font-bold text-sm transition-colors">Distractions</h3>
+            <div className="p-2.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg transition-colors">
+              <Users size={20} />
             </div>
           </div>
-          <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white mb-2 transition-colors">{stats?.distractions || 0}</h2>
-          <p className="text-red-500 dark:text-red-400 text-xs font-semibold bg-red-50 dark:bg-red-500/10 inline-block px-2 py-1 rounded-full whitespace-nowrap overflow-hidden text-ellipsis">-8.20% from Yesterday</p>
-          <div className="absolute -right-4 -bottom-4 bg-purple-50 dark:bg-purple-500/5 w-24 h-24 rounded-full blur-2xl group-hover:bg-purple-100 dark:group-hover:bg-purple-500/10 transition-colors pointer-events-none"></div>
+          <h2 className="text-4xl font-black text-slate-800 dark:text-white mb-2 transition-colors tracking-tighter">
+             <AnimatedCounter value={stats?.distractions || 0} />
+          </h2>
+          <p className="text-red-500 dark:text-red-400 text-xs font-bold mt-2 inline-block transition-colors">-8.20% from Yesterday</p>
+          <div className="absolute -right-4 -bottom-4 bg-purple-500/5 w-24 h-24 rounded-full blur-xl group-hover:bg-purple-500/10 transition-colors duration-700 pointer-events-none"></div>
         </motion.div>
       </motion.div>
 
       {/* Analytics Chart area */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 transition-colors duration-300"
+        transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
+        className="bg-[#ffffff] dark:bg-[#000000] rounded-xl p-8 shadow-sm dark:shadow-none border border-[#e2e8f0] dark:border-[#27272a] transition-colors duration-500"
       >
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white transition-colors">Study Analytic</h3>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white transition-colors">Study Analytic</h3>
             <div className="flex gap-4 mt-2">
-              <span className="flex items-center text-xs text-slate-500 dark:text-slate-400 transition-colors"><span className="w-2 h-2 rounded-full bg-teal-500 mr-2"></span> Focus Time</span>
-              <span className="flex items-center text-xs text-slate-500 dark:text-slate-400 transition-colors"><span className="w-2 h-2 rounded-full bg-indigo-500 mr-2"></span> Distractions</span>
+              <span className="flex items-center text-xs font-bold text-slate-500 dark:text-slate-400 transition-colors uppercase tracking-wider"><span className="w-2.5 h-2.5 rounded-full bg-teal-500 mr-2 shadow-[0_0_8px_rgba(20,184,166,0.6)]"></span> Focus Time</span>
+              <span className="flex items-center text-xs font-bold text-slate-500 dark:text-slate-400 transition-colors uppercase tracking-wider"><span className="w-2.5 h-2.5 rounded-full bg-indigo-500 mr-2 shadow-[0_0_8px_rgba(99,102,241,0.6)]"></span> Distractions</span>
             </div>
           </div>
-          <select className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm rounded-lg px-4 py-2 outline-none font-medium transition-colors">
+          <select className="bg-slate-50 dark:bg-[#09090b] border box-border border-[#e2e8f0] dark:border-[#27272a] text-slate-600 dark:text-slate-300 text-sm rounded-lg px-5 py-2.5 outline-none font-bold cursor-pointer transition-colors focus:ring-2 focus:ring-brand-500">
             <option>This Year</option>
             <option>Last Year</option>
           </select>
         </div>
 
-        <div className="h-72 w-full mt-4">
+        <div className="h-80 w-full mt-4">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={dummyChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#14b8a6" stopOpacity={isDarkMode ? 0.2 : 0.1}/>
+                  <stop offset="5%" stopColor="#14b8a6" stopOpacity={isDarkMode ? 0.3 : 0.2}/>
                   <stop offset="95%" stopColor="#14b8a6" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={isDarkMode ? 0.2 : 0.1}/>
+                  <stop offset="5%" stopColor="#6366f1" stopOpacity={isDarkMode ? 0.3 : 0.2}/>
                   <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? "#334155" : "#f1f5f9"} />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: isDarkMode ? '#cbd5e1' : '#94a3b8', fontSize: 12}} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{fill: isDarkMode ? '#cbd5e1' : '#94a3b8', fontSize: 12}} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? "#27272a" : "#e2e8f0"} />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: isDarkMode ? '#a1a1aa' : '#64748b', fontSize: 13, fontWeight: 600}} dy={15} />
+              <YAxis axisLine={false} tickLine={false} tick={{fill: isDarkMode ? '#a1a1aa' : '#64748b', fontSize: 13, fontWeight: 600}} />
               <Tooltip 
                 contentStyle={{ 
                   borderRadius: '12px', 
-                  border: isDarkMode ? '1px solid #1e293b' : 'none', 
-                  backgroundColor: isDarkMode ? '#0f172a' : '#ffffff',
-                  color: isDarkMode ? '#f8fafc' : '#000000',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' 
+                  border: isDarkMode ? '1px solid #27272a' : '1px solid #e2e8f0', 
+                  backgroundColor: isDarkMode ? '#000000' : '#ffffff',
+                  color: isDarkMode ? '#f8fafc' : '#0f172a',
+                  boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.5)',
+                  fontWeight: 'bold'
                 }}
-                cursor={{ stroke: isDarkMode ? '#475569' : '#cbd5e1', strokeWidth: 1, strokeDasharray: '5 5' }}
+                cursor={{ stroke: isDarkMode ? '#3f3f46' : '#cbd5e1', strokeWidth: 2, strokeDasharray: '6 6' }}
               />
-              <Area type="monotone" dataKey="income" stroke="#14b8a6" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
-              <Area type="monotone" dataKey="expense" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
+              <Area 
+                type="monotone" 
+                dataKey="income" 
+                stroke="#14b8a6" 
+                strokeWidth={3} 
+                fillOpacity={1} 
+                fill="url(#colorIncome)" 
+                activeDot={{ r: 6, strokeWidth: 2, fill: '#14b8a6', stroke: isDarkMode ? '#000000' : '#fff' }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="expense" 
+                stroke="#6366f1" 
+                strokeWidth={3} 
+                fillOpacity={1} 
+                fill="url(#colorExpense)" 
+                activeDot={{ r: 6, strokeWidth: 2, fill: '#6366f1', stroke: isDarkMode ? '#000000' : '#fff' }}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>

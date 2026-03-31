@@ -37,87 +37,111 @@ export default function TrackerPage() {
   };
 
   return (
-    <div className="py-8 h-full flex flex-col items-center max-w-5xl mx-auto transition-colors duration-300">
+    <div className="py-8 pt-20 h-full flex flex-col items-center justify-center max-w-5xl mx-auto transition-colors duration-500">
       
-      {/* Top Navigation Ribbons specific to timer */}
-      <div className="flex bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full p-1 shadow-sm mb-12 transition-colors duration-300">
-        <button className="px-6 py-2 rounded-full bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-500 font-bold text-sm flex items-center gap-2 transition-colors">
+      {/* Top Navigation Ribbons specific to timer tracking */}
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 100 }}
+        className="flex bg-[#ffffff] dark:bg-[#000000] border border-[#e2e8f0] dark:border-[#27272a] rounded-xl p-1 shadow-sm mb-12 transition-colors duration-500"
+      >
+        <button className="px-6 py-2 rounded-lg bg-brand-500 text-white font-black text-sm flex items-center gap-2 shadow-sm">
           🎯 Focus
         </button>
-        <button className="px-6 py-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-sm transition-colors">
+        <button className="px-6 py-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#18181b] font-bold text-sm transition-all">
           ☕ Short Break
         </button>
-        <button className="px-6 py-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-sm transition-colors">
+        <button className="px-6 py-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#18181b] font-bold text-sm transition-all">
           🌴 Long Break
         </button>
-      </div>
+      </motion.div>
 
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[3rem] shadow-sm w-full max-w-2xl aspect-square flex flex-col items-center justify-center relative shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)] dark:shadow-none transition-colors duration-300"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, type: "spring", bounce: 0.4 }}
+        className="bg-[#ffffff] dark:bg-[#000000] border border-[#e2e8f0] dark:border-[#27272a] rounded-[2rem] p-12 shadow-sm w-full max-w-2xl flex flex-col items-center justify-center relative transition-colors duration-500"
       >
+        
+        {/* Glow underneath the timer */}
+        <AnimatePresence>
+          {isActive && !isDistracted && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 0.3, scale: 1.1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+              className="absolute w-80 h-80 bg-brand-500/50 rounded-full blur-[80px] pointer-events-none"
+            />
+          )}
+        </AnimatePresence>
+
         {/* The massive circular timer container */}
-        <div className="w-80 h-80 rounded-full bg-slate-50/50 dark:bg-slate-950/50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] border-[8px] border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center relative mb-8 transition-colors duration-300">
+        <div className="w-80 h-80 rounded-full bg-[#f8fafc] dark:bg-[#09090b] shadow-[inset_0_4px_10px_rgba(0,0,0,0.02)] dark:shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)] border-[4px] border-[#e2e8f0] dark:border-[#27272a] flex flex-col items-center justify-center relative mb-10 transition-colors duration-500 z-10 box-border">
           
           {/* Subtle progress ring fake */}
           <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="48" fill="none" className="stroke-[#fce5df] dark:stroke-slate-800 transition-colors" strokeWidth="4" />
+            <circle cx="50" cy="50" r="47" fill="none" className="stroke-[#f1f5f9] dark:stroke-[#18181b] transition-colors" strokeWidth="6" />
             <motion.circle 
-              cx="50" cy="50" r="48" fill="none" stroke="#f97316" strokeWidth="4" 
-              strokeDasharray="301.59"
-              strokeDashoffset={isActive ? 301.59 * (1 - (activeTime % 1500) / 1500) : 301.59}
+              cx="50" cy="50" r="47" fill="none" stroke="#f97316" strokeWidth="6" 
+              strokeDasharray="295"
+              strokeDashoffset={isActive ? 295 * (1 - (activeTime % 1500) / 1500) : 295}
               strokeLinecap="round"
+              className="filter drop-shadow-[0_0_8px_rgba(249,115,22,0.6)]"
               transition={{ ease: "linear" }}
             />
           </svg>
 
           <motion.div 
             key={activeTime}
-            initial={{ opacity: 0.8 }}
-            animate={{ opacity: 1 }}
-            className="text-7xl font-bold text-slate-800 dark:text-white font-sans tracking-tight transition-colors duration-300"
+            initial={{ opacity: 0.8, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`text-7xl font-black font-sans tracking-tighter transition-colors duration-300 ${isDistracted && isActive ? 'text-red-500' : 'text-slate-800 dark:text-white'}`}
           >
             {formatTime(activeTime)}
           </motion.div>
-          <div className={`mt-2 font-medium tracking-widest text-sm uppercase transition-colors duration-300 ${isDistracted && isActive ? 'text-red-500' : 'text-slate-400 dark:text-slate-500'}`}>
-            {isActive ? (isDistracted ? 'Distracted' : 'In Progress') : 'Ready'}
+          <div className="mt-2 font-black tracking-[0.2em] text-xs uppercase text-slate-400 dark:text-slate-500">
+            {isActive ? (isDistracted ? 'Distracted' : 'In Progress') : 'Ready to Focus'}
           </div>
         </div>
 
         {/* Action Controls */}
-        <div className="flex gap-4">
+        <div className="flex gap-4 relative z-10 w-full justify-center">
           <AnimatePresence mode="wait">
             {!isActive ? (
               <motion.button
                 key="play"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleStart}
-                className="w-16 h-16 rounded-2xl bg-brand-500 text-white flex items-center justify-center shadow-lg shadow-brand-500/30 transition-shadow hover:shadow-brand-500/40"
+                className="w-full max-w-[200px] h-14 rounded-xl bg-brand-500 text-white font-black text-lg flex items-center justify-center gap-3 shadow-[0_5px_15px_-5px_rgba(249,115,22,0.5)] transition-all hover:shadow-[0_8px_20px_-5px_rgba(249,115,22,0.6)]"
               >
-                <Play fill="currentColor" size={28} className="translate-x-1" />
+                <Play fill="currentColor" size={20} />
+                START
               </motion.button>
             ) : (
-              <motion.div key="controls" className="flex gap-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <motion.div key="controls" className="flex gap-4 w-full justify-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleStop}
-                  className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-red-500 dark:hover:border-red-500/50 hover:text-red-500 dark:hover:text-red-400 flex items-center justify-center shadow-sm transition-colors"
+                  className="w-48 h-14 rounded-xl bg-[#ffffff] dark:bg-[#000000] border box-border border-[#e2e8f0] dark:border-[#27272a] text-slate-800 dark:text-white font-black text-lg flex items-center justify-center gap-3 hover:border-red-500 dark:hover:border-red-500 hover:text-red-500 dark:hover:text-red-500 transition-all shadow-sm"
                 >
-                  <Square fill="currentColor" size={24} />
+                  <Square fill="currentColor" size={20} />
+                  STOP
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => navigate('/focus', { state: { activeTime, distractions, isActive } })}
-                  className="w-16 h-16 rounded-2xl bg-slate-800 dark:bg-slate-700 text-white flex items-center justify-center shadow-lg hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors"
+                  className="w-48 h-14 rounded-xl bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-black text-lg flex items-center justify-center gap-3 shadow-lg hover:bg-slate-900 dark:hover:bg-white transition-all"
                 >
-                  <Maximize size={24} />
+                  <Maximize strokeWidth={3} size={20} />
+                  MAXIMIZE
                 </motion.button>
               </motion.div>
             )}
@@ -125,13 +149,6 @@ export default function TrackerPage() {
         </div>
 
       </motion.div>
-
-      {/* Shortcuts Display */}
-      <div className="mt-8 flex gap-4 text-xs font-semibold text-slate-400 dark:text-slate-500 transition-colors duration-300">
-        <div className="flex items-center gap-1"><span className="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-sm">Space</span> Start/Pause</div>
-        <div className="flex items-center gap-1"><span className="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-sm">S</span> Skip</div>
-      </div>
-      
     </div>
   );
 }

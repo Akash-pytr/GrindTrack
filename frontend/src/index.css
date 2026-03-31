@@ -8,25 +8,51 @@
   --color-brand-100: #ffedd5; /* Orange-100 */
 }
 
+/* Base Body Styles - High Contrast */
 body {
-  @apply bg-[#f3f4f6] dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased transition-colors duration-300;
+  @apply bg-[#ffffff] dark:bg-[#09090b] text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased transition-colors duration-300;
 }
 
+/* Custom Scrollbar for Chat boxes and VCs */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400 dark:bg-slate-600;
+}
+
+/* Background Grids for high contrast minimal look */
+.bg-grid-slate-100 {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, #f1f5f9 1px, transparent 1px),
+    linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+}
+
+.dark .bg-grid-slate-800 {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, #1e293b 1px, transparent 1px),
+    linear-gradient(to bottom, #1e293b 1px, transparent 1px);
+}
+
+/* High Contrast Gradient for Auth */
 .gradient-mesh {
-  background-color: #ff0055;
-  background-image: 
-    radial-gradient(at 0% 0%, hsla(342,100%,70%,1) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(242,100%,73%,1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(11,100%,68%,1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(282,100%,72%,1) 0px, transparent 50%);
+  @apply bg-slate-50 border-l border-slate-200;
+  background-image: radial-gradient(at 0% 0%, hsla(28, 100%, 74%, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(189, 100%, 56%, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(355, 100%, 93%, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(340, 100%, 76%, 1) 0px, transparent 50%);
 }
 
-/* Custom dark mode gradient overlay for AuthPage */
 .dark .gradient-mesh {
-  background-color: #1e1b4b;
-  background-image: 
-    radial-gradient(at 0% 0%, hsla(342,100%,40%,1) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(242,100%,43%,1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(11,100%,38%,1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(282,100%,42%,1) 0px, transparent 50%);
+  @apply bg-[#000000] border-l border-slate-800;
+  background-image: radial-gradient(at 0% 0%, hsla(28, 100%, 20%, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(189, 100%, 20%, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(355, 100%, 10%, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(340, 100%, 15%, 1) 0px, transparent 50%);
 }
