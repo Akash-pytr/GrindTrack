@@ -26,8 +26,7 @@ export default function LibrariesPage() {
   useEffect(() => {
     // Connect just to get lobby stats
     // Assuming backend runs on 5050 in dev
-    const socketUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5050';
-    const socket = io(socketUrl);
+    const socket = io();
 
     socket.on('connect', () => {
       socket.emit('get-lobby-state');

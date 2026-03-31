@@ -36,21 +36,26 @@ app.get('/', (req, res) => res.send('API is running...'));
 
 // Socket.io Real-time Logic for Virtual Study Rooms
 const activeRooms = {}; // Format: { roomId: { name: "10th VC", users: Set() } }
+const broadcastLobbyState = () => {
+    const roomCounts = {};
+    for (const [roomId, data] of Object.entries(activeRooms)) {
+      roomCounts[roomId] = data.users.size;
+    }
+    io.emit('lobby-state', roomCounts);
+};
 
 io.on('connection', (socket) => {
   console.log('User connected to socket:', socket.id);
 
   // Request all active room counts (Lobby view)
   socket.on('get-lobby-state', () => {
-    const roomCounts = {};
-    for (const [roomId, data] of Object.entries(activeRooms)) {
-      roomCounts[roomId] = data.users.size;
-    }
-    socket.emit('lobby-state', roomCounts);
+    console.log('Client requested lobby state:', socket.id);
+    broadcastLobbyState();
   });
 
   // User joins a specific VC Room
   socket.on('join-room', ({ roomId, userName }) => {
+    console.log(`User ${userName} (${socket.id}) joining room: ${roomId}`);
     socket.join(roomId);
     
     // Track user
@@ -72,12 +77,8 @@ io.on('connection', (socket) => {
     const currentUsers = Array.from(activeRooms[roomId].userNames.entries()).map(([id, name]) => ({ id, name }));
     io.to(roomId).emit('room-users', { users: currentUsers, ownerId: activeRooms[roomId].ownerId });
     
-    // Broadcast lobby updates
-    const roomCounts = {};
-    for (const [rId, data] of Object.entries(activeRooms)) {
-      roomCounts[rId] = data.users.size;
-    }
-    io.emit('lobby-state', roomCounts);
+    // Broadcast lobby updates to everyone
+    broadcastLobbyState();
   });
 
   // Relays signal (Offer/Answer/Candidate) to a specific remote peer for WebRTC
@@ -104,6 +105,7 @@ io.on('connection', (socket) => {
   const handleDisconnectFromRoom = (sock, roomId) => {
      const roomData = activeRooms[roomId];
      if (roomData && roomData.users.has(sock.id)) {
+        console.log(`User ${sock.id} leaving room: ${roomId}`);
         const userName = roomData.userNames.get(sock.id) || 'Someone';
         roomData.users.delete(sock.id);
         roomData.userNames.delete(sock.id);
@@ -128,6 +130,7 @@ io.on('connection', (socket) => {
 
   // Handle chat messages within a VC
   socket.on('send-message', ({ roomId, message, userName }) => {
+    console.log(`Message from ${userName} in ${roomId}: ${message}`);
     io.to(roomId).emit('receive-message', {
       id: Date.now(),
       sender: userName,

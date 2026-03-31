@@ -96,8 +96,7 @@ export default function RoomView() {
   };
 
   useEffect(() => {
-    const socketUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5050';
-    const newSocket = io(socketUrl);
+    const newSocket = io();
     setSocket(newSocket);
 
     const startWebRTC = async () => {
