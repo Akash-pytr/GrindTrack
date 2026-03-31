@@ -1,0 +1,13 @@
+{
+  "name": "grindtrack",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd frontend && vite",
+    "build": "cd frontend && vite build",
+    "start": "cd frontend && vite preview",
+    "lint": "cd frontend && eslint ."
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
