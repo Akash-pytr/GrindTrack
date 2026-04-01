@@ -276,8 +276,8 @@ export default function TrackerPage() {
         )}
       </AnimatePresence>
       
-      {/* Aesthetic Container */}
-      <div className="w-full max-w-[420px] p-8 rounded-[2.5rem] bg-white/5 dark:bg-black/20 backdrop-blur-2xl border border-white/10 dark:border-white/5 shadow-2xl relative overflow-hidden">
+      {/* Aesthetic Container (Made transparent for themes) */}
+      <div className="w-full max-w-[420px] p-8 rounded-[2.5rem] relative overflow-hidden">
         
         {/* Decorative elements */}
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />

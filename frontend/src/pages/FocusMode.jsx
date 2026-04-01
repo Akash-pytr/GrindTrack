@@ -89,7 +89,7 @@ export default function FocusMode() {
         <Minimize size={24} />
       </motion.button>
 
-      <div className="text-center relative z-10 p-20 bg-white/50 dark:bg-slate-900/50 backdrop-blur-3xl rounded-[4rem] border border-slate-100 dark:border-slate-800 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)] dark:shadow-none min-w-[500px] transition-colors duration-300">
+      <div className="text-center relative z-10 p-20 min-w-[500px] transition-colors duration-300">
         <motion.h2 
           animate={{ color: isDistracted ? '#ef4444' : '#f97316' }}
           className="text-lg font-bold uppercase tracking-[0.4em] mb-8"
