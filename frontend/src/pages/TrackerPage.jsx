@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVisibilityManager } from '../hooks/useVisibilityManager';
 import { useSession } from '../context/SessionContext';
-import { Play, Square, Maximize } from 'lucide-react';
+import { Maximize } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function TrackerPage() {
   const [isActive, setIsActive] = useState(false);
+  const [mode, setMode] = useState("focus"); // 'focus', 'short', 'long'
   const { startSession, endSession } = useSession();
   const navigate = useNavigate();
 
@@ -18,6 +19,16 @@ export default function TrackerPage() {
     setDistractions
   } = useVisibilityManager(isActive);
 
+  // Map modes to durations in seconds
+  const modeDurations = {
+    focus: 1500,
+    short: 300,
+    long: 900
+  };
+
+  const totalTime = modeDurations[mode];
+  const timeLeft = Math.max(0, totalTime - activeTime);
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -25,130 +36,151 @@ export default function TrackerPage() {
   };
 
   const handleStart = async () => {
-    await startSession();
-    setActiveTime(0);
-    setDistractions(0);
-    setIsActive(true);
+    if (!isActive) {
+      await startSession();
+      setIsActive(true);
+    } else {
+      setIsActive(false);
+      // We don't automatically end the session on pause in the original backend logic,
+      // but the user's UI expects a "Pause" behavior.
+      // However, current endSession stops the DB record.
+      // I'll stick to Start/Stop for now to preserve session integrity.
+    }
   };
 
   const handleStop = async () => {
     setIsActive(false);
     await endSession(activeTime, distractions);
+    setActiveTime(0);
+    setDistractions(0);
   };
 
+  const setModeTime = (type) => {
+    if (isActive) {
+      if (confirm("Switching modes will end your current session. Continue?")) {
+        handleStop();
+        setMode(type);
+      }
+    } else {
+      setMode(type);
+      setActiveTime(0);
+    }
+  };
+
+  // Automatically end session if time runs out
+  useEffect(() => {
+    if (isActive && timeLeft === 0) {
+      handleStop();
+      // Play a sound or notification here if desired
+    }
+  }, [timeLeft, isActive]);
+
   return (
-    <div className="py-8 pt-20 h-full flex flex-col items-center justify-center max-w-5xl mx-auto transition-colors duration-500">
+    <div className="h-full flex flex-col items-center justify-center py-12 transition-colors duration-500">
       
-      {/* Top Navigation Ribbons specific to timer tracking */}
-      <motion.div 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 100 }}
-        className="flex bg-[#ffffff] dark:bg-[#000000] border border-[#e2e8f0] dark:border-[#27272a] rounded-xl p-1 shadow-sm mb-12 transition-colors duration-500"
-      >
-        <button className="px-6 py-2 rounded-lg bg-brand-500 text-white font-black text-sm flex items-center gap-2 shadow-sm">
-          🎯 Focus
-        </button>
-        <button className="px-6 py-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#18181b] font-bold text-sm transition-all">
-          ☕ Short Break
-        </button>
-        <button className="px-6 py-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#18181b] font-bold text-sm transition-all">
-          🌴 Long Break
-        </button>
-      </motion.div>
-
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, type: "spring", bounce: 0.4 }}
-        className="bg-[#ffffff] dark:bg-[#000000] border border-[#e2e8f0] dark:border-[#27272a] dark:neon-border-orange rounded-[2rem] p-12 shadow-sm w-full max-w-2xl flex flex-col items-center justify-center relative transition-colors duration-500 scanline"
-      >
+      {/* Aesthetic Container */}
+      <div className="w-full max-w-[420px] p-8 rounded-[2.5rem] bg-white/5 dark:bg-black/20 backdrop-blur-2xl border border-white/10 dark:border-white/5 shadow-2xl relative overflow-hidden">
         
-        {/* Glow underneath the timer */}
-        <AnimatePresence>
-          {isActive && !isDistracted && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 0.5, scale: 1.1 }}
-              exit={{ opacity: 0, scale: 0.5 }}
-              transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
-              className="absolute w-80 h-80 bg-brand-500/60 rounded-full blur-[100px] pointer-events-none dark:shadow-neon-orange"
-            />
-          )}
-        </AnimatePresence>
+        {/* Decorative elements */}
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* The massive circular timer container */}
-        <div className="w-80 h-80 rounded-full bg-[#f8fafc] dark:bg-[#09090b] shadow-[inset_0_4px_10px_rgba(0,0,0,0.02)] dark:shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)] border-[4px] border-[#e2e8f0] dark:border-[#27272a] flex flex-col items-center justify-center relative mb-10 transition-colors duration-500 z-10 box-border">
-          
-          {/* Subtle progress ring fake */}
-          <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="47" fill="none" className="stroke-[#f1f5f9] dark:stroke-[#18181b] transition-colors" strokeWidth="6" />
-            <motion.circle 
-              cx="50" cy="50" r="47" fill="none" stroke="#f97316" strokeWidth="6" 
-              strokeDasharray="295"
-              strokeDashoffset={isActive ? 295 * (1 - (activeTime % 1500) / 1500) : 295}
-              strokeLinecap="round"
-              className="filter drop-shadow-[0_0_12px_rgba(249,115,22,0.9)]"
-              transition={{ ease: "linear" }}
-            />
-          </svg>
+        {/* Mode Switch (Simplified and Beautiful) */}
+        <div className="flex bg-white/10 dark:bg-white/5 rounded-2xl p-1.5 mb-10 relative z-10 border border-white/5">
+          {[
+            { label: "Focus", key: "focus" },
+            { label: "Short", key: "short" },
+            { label: "Long", key: "long" },
+          ].map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setModeTime(item.key)}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+                mode === item.key
+                  ? "bg-gradient-to-r from-orange-500 to-yellow-400 text-black shadow-lg shadow-orange-500/20"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
 
-          <motion.div 
-            key={activeTime}
-            initial={{ opacity: 0.8, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`text-7xl font-black font-sans tracking-tighter transition-colors duration-300 ${isDistracted && isActive ? 'text-red-500' : 'text-slate-800 dark:text-white'}`}
+        {/* Timer Core */}
+        <div className="flex flex-col items-center justify-center relative z-10">
+          <motion.div
+            onClick={isActive ? handleStop : handleStart}
+            className="w-64 h-64 rounded-full border-[6px] border-white/5 flex items-center justify-center relative shadow-[0_0_50px_rgba(0,0,0,0.2)] cursor-pointer group"
+            animate={{ scale: isActive ? 1.02 : 1 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.5, ease: "anticipate" }}
           >
-            {formatTime(activeTime)}
+            {/* Hover Glow Effect */}
+            <div className="absolute inset-0 rounded-full bg-orange-500/0 group-hover:bg-orange-500/5 transition-colors duration-300" />
+
+            {/* Animated Rotating Border */}
+            {isActive && !isDistracted && (
+              <div className="absolute inset-[-6px] rounded-full border-t-[6px] border-orange-500 animate-spin-slow shadow-[0_0_15px_rgba(249,115,22,0.4)]" />
+            )}
+
+            <div className="flex flex-col items-center">
+              <motion.h1 
+                key={timeLeft}
+                initial={{ opacity: 0.8, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={`text-6xl font-black tracking-tighter transition-colors duration-300 ${isDistracted && isActive ? 'text-red-500' : 'text-slate-800 dark:text-white'}`}
+              >
+                {formatTime(timeLeft)}
+              </motion.h1>
+              <div className={`mt-2 text-[10px] font-black uppercase tracking-[0.3em] ${isDistracted && isActive ? 'text-red-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                {isActive ? (isDistracted ? "Distracted" : "Focusing") : "Click to Start"}
+              </div>
+            </div>
           </motion.div>
-          <div className="mt-2 font-black tracking-[0.2em] text-xs uppercase text-slate-400 dark:text-slate-500">
-            {isActive ? (isDistracted ? 'Distracted' : 'In Progress') : 'Ready to Focus'}
+
+          {/* Secondary Actions */}
+          <div className="mt-8 flex justify-center">
+            {isActive && (
+              <button
+                onClick={() => navigate('/focus', { state: { activeTime, distractions, isActive } })}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-800/50 dark:bg-white/10 text-white/70 dark:text-white/70 hover:text-white dark:hover:text-white border border-white/10 backdrop-blur-sm transition-all hover:bg-slate-800 dark:hover:bg-white/20"
+                title="Maximize Focus Mode"
+              >
+                <Maximize size={16} strokeWidth={3} />
+                <span className="text-xs font-bold uppercase tracking-widest">Maximize</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex gap-4 relative z-10 w-full justify-center">
-          <AnimatePresence mode="wait">
-            {!isActive ? (
-              <motion.button
-                key="play"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleStart}
-                className="w-full max-w-[200px] h-14 rounded-xl bg-brand-500 text-white font-black text-lg flex items-center justify-center gap-3 shadow-[0_5px_15px_-5px_rgba(249,115,22,0.5)] transition-all hover:shadow-[0_8px_20px_-5px_rgba(249,115,22,0.6)]"
-              >
-                <Play fill="currentColor" size={20} />
-                START
-              </motion.button>
-            ) : (
-              <motion.div key="controls" className="flex gap-4 w-full justify-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleStop}
-                  className="w-48 h-14 rounded-xl bg-[#ffffff] dark:bg-[#000000] border box-border border-[#e2e8f0] dark:border-[#27272a] text-slate-800 dark:text-white font-black text-lg flex items-center justify-center gap-3 hover:border-red-500 dark:hover:border-red-500 hover:text-red-500 dark:hover:text-red-500 transition-all shadow-sm"
-                >
-                  <Square fill="currentColor" size={20} />
-                  STOP
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate('/focus', { state: { activeTime, distractions, isActive } })}
-                  className="w-48 h-14 rounded-xl bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 font-black text-lg flex items-center justify-center gap-3 shadow-lg hover:bg-slate-900 dark:hover:bg-white transition-all dark:shadow-neon-orange"
-                >
-                  <Maximize strokeWidth={3} size={20} />
-                  MAXIMIZE
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* Mini Stats (Beautiful Footer) */}
+        <div className="flex justify-between mt-12 pt-8 border-t border-white/10 relative z-10">
+          <div className="text-center">
+            <p className="text-xl font-black text-slate-800 dark:text-white">4</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sessions</p>
+          </div>
+          <div className="w-px h-10 bg-white/10" />
+          <div className="text-center">
+            <p className="text-xl font-black text-slate-800 dark:text-white">2h 10m</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Focus Time</p>
+          </div>
         </div>
-
-      </motion.div>
+      </div>
+      
+      {/* Distraction Hint */}
+      <AnimatePresence>
+        {isDistracted && isActive && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="mt-8 px-6 py-3 bg-red-500/10 border border-red-500/20 rounded-full text-red-500 text-sm font-bold flex items-center gap-2"
+          >
+            <span className="animate-pulse">⚠️</span> Focus lost: Tab switched or minimized
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
