@@ -12,6 +12,10 @@ export const ThemeProvider = ({ children }) => {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
+  const [backgroundImage, setBackgroundImage] = useState(() => {
+    return localStorage.getItem('backgroundImage') || null;
+  });
+
   useEffect(() => {
     const root = window.document.documentElement;
     if (isDarkMode) {
@@ -23,10 +27,18 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [isDarkMode]);
 
+  useEffect(() => {
+    if (backgroundImage) {
+      localStorage.setItem('backgroundImage', backgroundImage);
+    } else {
+      localStorage.removeItem('backgroundImage');
+    }
+  }, [backgroundImage]);
+
   const toggleTheme = () => setIsDarkMode(prev => !prev);
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, backgroundImage, setBackgroundImage }}>
       {children}
     </ThemeContext.Provider>
   );

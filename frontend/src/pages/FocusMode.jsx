@@ -52,6 +52,7 @@ export default function FocusMode() {
 
   const totalTime = location.state?.totalTime || 1500;
   const timeLeft = Math.max(0, totalTime - activeTime);
+  const backgroundImage = location.state?.backgroundImage || null;
 
   return (
     <motion.div 
@@ -61,6 +62,23 @@ export default function FocusMode() {
       transition={{ duration: 0.8 }}
       className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-300"
     >
+      {/* Background Image */}
+      <AnimatePresence>
+        {backgroundImage && !isDistracted && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-0"
+          >
+            <img 
+              src={backgroundImage} 
+              alt="Background" 
+              className="w-full h-full object-cover brightness-[0.35]"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       <motion.button 
         whileHover={{ scale: 1.1, rotate: 90 }}

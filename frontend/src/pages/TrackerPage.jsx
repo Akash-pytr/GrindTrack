@@ -2,8 +2,54 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useVisibilityManager } from '../hooks/useVisibilityManager';
 import { useSession } from '../context/SessionContext';
-import { Maximize } from 'lucide-react';
+import { Maximize, Palette, X, ChevronRight, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '../context/ThemeContext';
+
+const THEMES = {
+  "Aesthetic": [
+    { name: "Lofi Dream", url: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop" },
+    { name: "Neon City", url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?q=80&w=2070&auto=format&fit=crop" },
+    { name: "Cozy Cabin", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop" },
+    { name: "Ocean Bridge", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073&auto=format&fit=crop" }
+  ],
+  "Cartoon": [
+    { name: "Shinchan Family", url: "https://images.alphacoders.com/132/1327170.png" },
+    { name: "Shinchan Cool", url: "https://images4.alphacoders.com/264/264356.jpg" },
+    { name: "Doraemon World", url: "https://images5.alphacoders.com/131/1318283.png" },
+    { name: "Richie Rich", url: "https://images4.alphacoders.com/132/1320668.jpeg" }
+  ],
+  "Anime": [
+    { name: "Naruto Uzumaki", url: "https://images3.alphacoders.com/131/1314545.jpeg" },
+    { name: "One Piece Sky", url: "https://images2.alphacoders.com/131/1314330.jpeg" },
+    { name: "Demon Slayer", url: "https://images3.alphacoders.com/131/1314547.jpeg" },
+    { name: "Your Name", url: "https://images3.alphacoders.com/133/1331707.png" }
+  ],
+  "Superhero": [
+    { name: "Avengers Assemble", url: "https://images7.alphacoders.com/131/1315570.jpeg" },
+    { name: "Iron Man HDR", url: "https://images4.alphacoders.com/131/1315572.jpeg" },
+    { name: "Spiderverse", url: "https://images.alphacoders.com/132/1320671.jpeg" },
+    { name: "Deadpool", url: "https://images.alphacoders.com/132/1320672.jpeg" }
+  ],
+  "DC": [
+    { name: "Batman Dark", url: "https://images3.alphacoders.com/130/1309852.jpeg" },
+    { name: "The Joker", url: "https://images4.alphacoders.com/132/1320675.jpeg" },
+    { name: "Superman", url: "https://images.alphacoders.com/132/1320676.jpeg" },
+    { name: "Wonder Woman", url: "https://images4.alphacoders.com/132/1320677.jpeg" }
+  ],
+  "Cars": [
+    { name: "Lambo Neon", url: "https://images.alphacoders.com/133/1339029.jpg" },
+    { name: "Porsche 911", url: "https://images5.alphacoders.com/133/1339031.jpg" },
+    { name: "GTR Skyline", url: "https://images7.alphacoders.com/133/1339032.jpg" },
+    { name: "Bugatti Mistral", url: "https://images2.alphacoders.com/133/1339033.jpg" }
+  ],
+  "Bikes": [
+    { name: "Ninja H2R", url: "https://images3.alphacoders.com/134/1344234.jpg" },
+    { name: "Ducati V4S", url: "https://images5.alphacoders.com/134/1344235.jpg" },
+    { name: "BMW S1000RR", url: "https://images7.alphacoders.com/134/1344237.jpg" },
+    { name: "Hayabusa", url: "https://images.alphacoders.com/134/1344238.jpg" }
+  ]
+};
 
 export default function TrackerPage() {
   const location = useLocation();
@@ -11,6 +57,10 @@ export default function TrackerPage() {
   const [mode, setMode] = useState("focus"); // 'focus', 'short', 'long'
   const { startSession, endSession } = useSession();
   const navigate = useNavigate();
+  const { isDarkMode, backgroundImage, setBackgroundImage } = useTheme();
+
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("Aesthetic");
 
   // Custom duration state (stored in seconds)
   const [customFocusTime, setCustomFocusTime] = useState(() => {
@@ -106,7 +156,125 @@ export default function TrackerPage() {
   }, [timeLeft, isActive]);
 
   return (
-    <div className="h-full flex flex-col items-center justify-center py-12 transition-colors duration-500">
+    <div className="h-full min-h-screen flex flex-col items-center justify-center py-12 transition-all duration-700 relative overflow-hidden">
+      
+      {/* Dynamic Background Image */}
+      <AnimatePresence>
+        {backgroundImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-0"
+          >
+            <img 
+              src={backgroundImage} 
+              alt="Background" 
+              className="w-full h-full object-cover brightness-[0.4] scale-105"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Theme Button (Top Right) */}
+      <div className="absolute top-8 right-8 z-50">
+        <button
+          onClick={() => setIsThemeModalOpen(true)}
+          className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 text-white shadow-xl transition-all hover:scale-110 active:scale-95"
+          title="Change Theme"
+        >
+          <Palette size={24} />
+        </button>
+      </div>
+
+      {/* Theme Modal */}
+      <AnimatePresence>
+        {isThemeModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md"
+            onClick={() => setIsThemeModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-4xl bg-slate-900/90 rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden flex flex-col md:flex-row h-[80vh]"
+            >
+              {/* Sidebar */}
+              <div className="w-full md:w-64 bg-black/30 p-8 border-r border-white/5 flex flex-col gap-2">
+                <div className="flex items-center gap-3 mb-8">
+                  <Palette className="text-orange-500" size={24} />
+                  <h3 className="text-xl font-black text-white uppercase tracking-tighter">Themes</h3>
+                </div>
+                {Object.keys(THEMES).map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                      selectedCategory === cat 
+                        ? "bg-orange-500 text-black shadow-lg" 
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    {cat}
+                    <ChevronRight size={16} className={selectedCategory === cat ? "opacity-100" : "opacity-0"} />
+                  </button>
+                ))}
+                
+                <div className="mt-auto pt-8 border-t border-white/5">
+                  <button
+                    onClick={() => setBackgroundImage(null)}
+                    className="w-full px-4 py-3 rounded-xl text-sm font-bold text-red-400 hover:bg-red-500/10 transition-all text-left"
+                  >
+                    Reset Background
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid */}
+              <div className="flex-1 p-8 overflow-y-auto">
+                <div className="flex justify-between items-center mb-8">
+                  <h4 className="text-2xl font-black text-white uppercase tracking-tighter">{selectedCategory}</h4>
+                  <button onClick={() => setIsThemeModalOpen(false)} className="p-2 rounded-full hover:bg-white/10 transition-all">
+                    <X size={24} className="text-slate-400" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {THEMES[selectedCategory].map((theme) => (
+                    <motion.div
+                      key={theme.url}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setBackgroundImage(theme.url)}
+                      className="group cursor-pointer rounded-2xl overflow-hidden relative aspect-video border border-white/5 bg-white/5"
+                    >
+                      <img 
+                        src={theme.url} 
+                        alt={theme.name} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+                      <div className="absolute bottom-4 left-4 flex items-center justify-between right-4">
+                        <span className="text-sm font-bold text-white tracking-tight">{theme.name}</span>
+                        {backgroundImage === theme.url && (
+                          <div className="bg-orange-500 p-1 rounded-full text-black">
+                            <Check size={14} strokeWidth={4} />
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Aesthetic Container */}
       <div className="w-full max-w-[420px] p-8 rounded-[2.5rem] bg-white/5 dark:bg-black/20 backdrop-blur-2xl border border-white/10 dark:border-white/5 shadow-2xl relative overflow-hidden">
@@ -226,7 +394,7 @@ export default function TrackerPage() {
           <div className="mt-8 flex justify-center">
             {isActive && (
               <button
-                onClick={() => navigate('/focus', { state: { activeTime, distractions, isActive, totalTime } })}
+                onClick={() => navigate('/focus', { state: { activeTime, distractions, isActive, totalTime, backgroundImage } })}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-800/50 dark:bg-white/10 text-white/70 dark:text-white/70 hover:text-white dark:hover:text-white border border-white/10 backdrop-blur-sm transition-all hover:bg-slate-800 dark:hover:bg-white/20"
                 title="Maximize Focus Mode"
               >
