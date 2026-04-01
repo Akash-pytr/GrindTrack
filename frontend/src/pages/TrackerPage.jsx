@@ -8,46 +8,40 @@ import { useTheme } from '../context/ThemeContext';
 
 const THEMES = {
   "Aesthetic": [
-    { name: "Lofi Dream", url: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop" },
-    { name: "Neon City", url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?q=80&w=2070&auto=format&fit=crop" },
-    { name: "Cozy Cabin", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop" },
-    { name: "Ocean Bridge", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073&auto=format&fit=crop" }
+    { name: "Minimal Dark", url: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070" },
+    { name: "Neon Night", url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?q=80&w=2070" },
+    { name: "Mountain Mist", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070" },
+    { name: "Ocean Sunset", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2070" }
   ],
   "Cartoon": [
-    { name: "Shinchan Family", url: "https://images.alphacoders.com/132/1327170.png" },
-    { name: "Shinchan Cool", url: "https://images4.alphacoders.com/264/264356.jpg" },
-    { name: "Doraemon World", url: "https://images5.alphacoders.com/131/1318283.png" },
-    { name: "Richie Rich", url: "https://images4.alphacoders.com/132/1320668.jpeg" }
+    { name: "Shinchan Family", url: "/themes/shinchan_family.png" },
+    { name: "Shinchan Cool", url: "https://images.pxfuel.com/wallpaper/264/356/v4s/crayon-shin-chan-wallpaper-preview.jpg" },
+    { name: "Doraemon", url: "https://images.pxfuel.com/wallpaper/921/1018/v4s/doraemon-wallpaper-preview.jpg" }
   ],
   "Anime": [
-    { name: "Naruto Uzumaki", url: "https://images3.alphacoders.com/131/1314545.jpeg" },
-    { name: "One Piece Sky", url: "https://images2.alphacoders.com/131/1314330.jpeg" },
-    { name: "Demon Slayer", url: "https://images3.alphacoders.com/131/1314547.jpeg" },
-    { name: "Your Name", url: "https://images3.alphacoders.com/133/1331707.png" }
+    { name: "Naruto & Sasuke", url: "/themes/naruto_art.png" },
+    { name: "One Piece", url: "https://images.pxfuel.com/wallpaper/131/131/v4s/one-piece-wallpaper-preview.jpg" },
+    { name: "Demon Slayer", url: "https://images.pxfuel.com/wallpaper/131/132/v4s/demon-slayer-wallpaper-preview.jpg" }
   ],
   "Superhero": [
-    { name: "Avengers Assemble", url: "https://images7.alphacoders.com/131/1315570.jpeg" },
-    { name: "Iron Man HDR", url: "https://images4.alphacoders.com/131/1315572.jpeg" },
-    { name: "Spiderverse", url: "https://images.alphacoders.com/132/1320671.jpeg" },
-    { name: "Deadpool", url: "https://images.alphacoders.com/132/1320672.jpeg" }
+    { name: "Avengers Assemble", url: "https://images.pxfuel.com/wallpaper/775/131/v4s/avengers-wallpaper-preview.jpg" },
+    { name: "Iron Man", url: "https://images.pxfuel.com/wallpaper/131/131/v4s/iron-man-wallpaper-preview.jpg" },
+    { name: "Spiderman", url: "https://images.pxfuel.com/wallpaper/132/132/v4s/spiderman-wallpaper-preview.jpg" }
   ],
   "DC": [
-    { name: "Batman Dark", url: "https://images3.alphacoders.com/130/1309852.jpeg" },
-    { name: "The Joker", url: "https://images4.alphacoders.com/132/1320675.jpeg" },
-    { name: "Superman", url: "https://images.alphacoders.com/132/1320676.jpeg" },
-    { name: "Wonder Woman", url: "https://images4.alphacoders.com/132/1320677.jpeg" }
+    { name: "Batman Dark", url: "/themes/batman_dark.png" },
+    { name: "The Joker", url: "https://images.pxfuel.com/wallpaper/132/132/v4s/joker-wallpaper-preview.jpg" },
+    { name: "Superman", url: "https://images.pxfuel.com/wallpaper/132/132/v4s/superman-wallpaper-preview.jpg" }
   ],
   "Cars": [
-    { name: "Lambo Neon", url: "https://images.alphacoders.com/133/1339029.jpg" },
-    { name: "Porsche 911", url: "https://images5.alphacoders.com/133/1339031.jpg" },
-    { name: "GTR Skyline", url: "https://images7.alphacoders.com/133/1339032.jpg" },
-    { name: "Bugatti Mistral", url: "https://images2.alphacoders.com/133/1339033.jpg" }
+    { name: "Porsche 911", url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070" },
+    { name: "Lambo Neon", url: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?q=80&w=2070" },
+    { name: "Classic Mustang", url: "https://images.unsplash.com/photo-1584345604482-8ce327fd517c?q=80&w=2070" }
   ],
   "Bikes": [
-    { name: "Ninja H2R", url: "https://images3.alphacoders.com/134/1344234.jpg" },
-    { name: "Ducati V4S", url: "https://images5.alphacoders.com/134/1344235.jpg" },
-    { name: "BMW S1000RR", url: "https://images7.alphacoders.com/134/1344237.jpg" },
-    { name: "Hayabusa", url: "https://images.alphacoders.com/134/1344238.jpg" }
+    { name: "Superbike Speed", url: "https://images.unsplash.com/photo-1558981403-c5f91ebefc25?q=80&w=2070" },
+    { name: "Yamaha R1", url: "https://images.unsplash.com/photo-1449495169669-7b118f960237?q=80&w=2070" },
+    { name: "Triumph Thruxton", url: "https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?q=80&w=2070" }
   ]
 };
 
