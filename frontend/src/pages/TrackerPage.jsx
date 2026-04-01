@@ -202,18 +202,18 @@ export default function TrackerPage() {
                     key={timeLeft}
                     initial={{ opacity: 0.8, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className={`text-6xl font-black tracking-tighter transition-colors duration-300 ${isDistracted && isActive ? 'text-red-500' : 'text-slate-800 dark:text-white'}`}
+                    onClick={(e) => {
+                      if (!isActive && mode === "focus") {
+                        e.stopPropagation();
+                        setIsEditing(true);
+                      }
+                    }}
+                    whileHover={!isActive && mode === "focus" ? { scale: 1.05, color: "#f97316" } : {}}
+                    className={`text-6xl font-black tracking-tighter transition-colors duration-300 cursor-pointer ${isDistracted && isActive ? 'text-red-500' : 'text-slate-800 dark:text-white'}`}
+                    title={!isActive && mode === "focus" ? "Click digits to edit time" : ""}
                   >
                     {formatTime(timeLeft)}
                   </motion.h1>
-                  {!isActive && mode === "focus" && (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-                      className="mt-1 text-[10px] text-orange-500/60 hover:text-orange-500 font-black uppercase tracking-widest transition-colors"
-                    >
-                      [ Edit Time ]
-                    </button>
-                  )}
                   <div className={`mt-2 text-[10px] font-black uppercase tracking-[0.3em] ${isDistracted && isActive ? 'text-red-400' : 'text-slate-400 dark:text-slate-500'}`}>
                     {isActive ? (isDistracted ? "Distracted" : "Focusing") : "Click to Start"}
                   </div>
