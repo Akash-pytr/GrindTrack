@@ -1,15 +1,26 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useVisibilityManager } from '../hooks/useVisibilityManager';
 import { useSession } from '../context/SessionContext';
 import { Maximize } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function TrackerPage() {
-  const [isActive, setIsActive] = useState(false);
+  const location = useLocation();
+  const [isActive, setIsActive] = useState(() => location.state?.isActive || false);
   const [mode, setMode] = useState("focus"); // 'focus', 'short', 'long'
   const { startSession, endSession } = useSession();
   const navigate = useNavigate();
+
+  // Custom duration state (stored in seconds)
+  const [customFocusTime, setCustomFocusTime] = useState(() => {
+    const saved = localStorage.getItem('customFocusTime');
+    return saved ? parseInt(saved, 10) : 1500; // Default 25 min
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editHours, setEditHours] = useState(Math.floor(customFocusTime / 3600));
+  const [editMinutes, setEditMinutes] = useState(Math.floor((customFocusTime % 3600) / 60));
 
   const {
     activeTime,
@@ -19,9 +30,18 @@ export default function TrackerPage() {
     setDistractions
   } = useVisibilityManager(isActive);
 
+  useEffect(() => {
+    if (location.state?.activeTime !== undefined) {
+      setActiveTime(location.state.activeTime);
+    }
+    if (location.state?.distractions !== undefined) {
+      setDistractions(location.state.distractions);
+    }
+  }, [location.state, setActiveTime, setDistractions]);
+
   // Map modes to durations in seconds
   const modeDurations = {
-    focus: 1500,
+    focus: customFocusTime,
     short: 300,
     long: 900
   };
@@ -63,6 +83,16 @@ export default function TrackerPage() {
       }
     } else {
       setMode(type);
+      setActiveTime(0);
+    }
+  };
+
+  const handleSaveCustomTime = () => {
+    const totalSeconds = (parseInt(editHours) * 3600) + (parseInt(editMinutes) * 60);
+    if (totalSeconds > 0) {
+      setCustomFocusTime(totalSeconds);
+      localStorage.setItem('customFocusTime', totalSeconds.toString());
+      setIsEditing(false);
       setActiveTime(0);
     }
   };
@@ -109,15 +139,15 @@ export default function TrackerPage() {
         {/* Timer Core */}
         <div className="flex flex-col items-center justify-center relative z-10">
           <motion.div
-            onClick={isActive ? handleStop : handleStart}
+            onClick={isActive ? handleStop : (isEditing ? null : handleStart)}
             className="w-64 h-64 rounded-full border-[6px] border-white/5 flex items-center justify-center relative shadow-[0_0_50px_rgba(0,0,0,0.2)] cursor-pointer group"
             animate={{ scale: isActive ? 1.02 : 1 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: isEditing ? 1 : 1.05 }}
+            whileTap={{ scale: isEditing ? 1 : 0.95 }}
             transition={{ duration: 0.5, ease: "anticipate" }}
           >
             {/* Hover Glow Effect */}
-            <div className="absolute inset-0 rounded-full bg-orange-500/0 group-hover:bg-orange-500/5 transition-colors duration-300" />
+            {!isEditing && <div className="absolute inset-0 rounded-full bg-orange-500/0 group-hover:bg-orange-500/5 transition-colors duration-300" />}
 
             {/* Animated Rotating Border */}
             {isActive && !isDistracted && (
@@ -125,17 +155,70 @@ export default function TrackerPage() {
             )}
 
             <div className="flex flex-col items-center">
-              <motion.h1 
-                key={timeLeft}
-                initial={{ opacity: 0.8, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={`text-6xl font-black tracking-tighter transition-colors duration-300 ${isDistracted && isActive ? 'text-red-500' : 'text-slate-800 dark:text-white'}`}
-              >
-                {formatTime(timeLeft)}
-              </motion.h1>
-              <div className={`mt-2 text-[10px] font-black uppercase tracking-[0.3em] ${isDistracted && isActive ? 'text-red-400' : 'text-slate-400 dark:text-slate-500'}`}>
-                {isActive ? (isDistracted ? "Distracted" : "Focusing") : "Click to Start"}
-              </div>
+              {isEditing ? (
+                <div className="flex flex-col items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-col items-center">
+                      <input 
+                        type="number" 
+                        value={editHours} 
+                        onChange={(e) => setEditHours(Math.max(0, parseInt(e.target.value) || 0))}
+                        className="w-16 bg-white/5 border border-white/10 rounded-lg text-3xl font-black text-center text-white focus:outline-none focus:border-orange-500"
+                        min="0"
+                      />
+                      <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Hrs</span>
+                    </div>
+                    <span className="text-3xl font-black text-white">:</span>
+                    <div className="flex flex-col items-center">
+                      <input 
+                        type="number" 
+                        value={editMinutes} 
+                        onChange={(e) => setEditMinutes(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+                        className="w-16 bg-white/5 border border-white/10 rounded-lg text-3xl font-black text-center text-white focus:outline-none focus:border-orange-500"
+                        min="0"
+                        max="59"
+                      />
+                      <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Min</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <button 
+                      onClick={handleSaveCustomTime}
+                      className="px-4 py-1.5 bg-orange-500 text-black text-xs font-black rounded-lg hover:bg-orange-400 transition-colors"
+                    >
+                      SAVE
+                    </button>
+                    <button 
+                      onClick={() => setIsEditing(false)}
+                      className="px-4 py-1.5 bg-white/10 text-white text-xs font-black rounded-lg hover:bg-white/20 transition-colors"
+                    >
+                      CANCEL
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <motion.h1 
+                    key={timeLeft}
+                    initial={{ opacity: 0.8, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className={`text-6xl font-black tracking-tighter transition-colors duration-300 ${isDistracted && isActive ? 'text-red-500' : 'text-slate-800 dark:text-white'}`}
+                  >
+                    {formatTime(timeLeft)}
+                  </motion.h1>
+                  {!isActive && mode === "focus" && (
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+                      className="mt-1 text-[10px] text-orange-500/60 hover:text-orange-500 font-black uppercase tracking-widest transition-colors"
+                    >
+                      [ Edit Time ]
+                    </button>
+                  )}
+                  <div className={`mt-2 text-[10px] font-black uppercase tracking-[0.3em] ${isDistracted && isActive ? 'text-red-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                    {isActive ? (isDistracted ? "Distracted" : "Focusing") : "Click to Start"}
+                  </div>
+                </>
+              )}
             </div>
           </motion.div>
 
@@ -143,7 +226,7 @@ export default function TrackerPage() {
           <div className="mt-8 flex justify-center">
             {isActive && (
               <button
-                onClick={() => navigate('/focus', { state: { activeTime, distractions, isActive } })}
+                onClick={() => navigate('/focus', { state: { activeTime, distractions, isActive, totalTime } })}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-800/50 dark:bg-white/10 text-white/70 dark:text-white/70 hover:text-white dark:hover:text-white border border-white/10 backdrop-blur-sm transition-all hover:bg-slate-800 dark:hover:bg-white/20"
                 title="Maximize Focus Mode"
               >

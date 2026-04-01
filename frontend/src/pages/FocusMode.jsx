@@ -36,7 +36,7 @@ export default function FocusMode() {
   };
 
   const handleMinimize = () => {
-    navigate('/tracker', { state: { activeTime, distractions } });
+    navigate('/tracker', { state: { activeTime, distractions, isActive, totalTime } });
   };
 
   const formatTime = (seconds) => {
@@ -49,6 +49,9 @@ export default function FocusMode() {
     if (isDistracted) return isDarkMode ? '#450a0a' : '#fee2e2';
     return isDarkMode ? '#121212' : '#ffffff';
   };
+
+  const totalTime = location.state?.totalTime || 1500;
+  const timeLeft = Math.max(0, totalTime - activeTime);
 
   return (
     <motion.div 
@@ -83,7 +86,7 @@ export default function FocusMode() {
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           className="text-[8rem] md:text-[10rem] font-bold text-slate-800 dark:text-white tracking-tighter mb-12 transition-colors duration-300"
         >
-          {formatTime(activeTime)}
+          {formatTime(timeLeft)}
         </motion.div>
 
         <motion.button
