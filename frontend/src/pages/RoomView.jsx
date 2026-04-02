@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Send, LogOut, MessageSquare, Mic, MicOff, ShieldCheck, UserMinus } from 'lucide-react';
+import { Users, Send, LogOut, MessageSquare, Mic, MicOff, ShieldCheck, UserMinus, Video, VideoOff, MonitorUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 
@@ -27,7 +27,9 @@ export default function RoomView() {
   const messagesEndRef = useRef(null);
   const localStreamRef = useRef(null);
   const peersRef = useRef({}); // socketId -> RTCPeerConnection
-  const audioElementsRef = useRef({}); // socketId -> HTMLAudioElement
+  const [remoteStreams, setRemoteStreams] = useState({}); // socketId -> MediaStream
+  const [isCameraOn, setIsCameraOn] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
 
   // WebRTC Configuration
   const rtcConfig = {
@@ -48,10 +50,10 @@ export default function RoomView() {
     return () => clearInterval(interval);
   }, []);
 
-  // Initialize Microphone
-  const initMicrophone = async (socketId) => {
+  // Initialize Media (Audio/Video)
+  const initMedia = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
       localStreamRef.current = stream;
       
       // Local Speaking Detection
@@ -74,11 +76,11 @@ export default function RoomView() {
         // Only show speaking if UNMUTED and volume exists
         const isTrackEnabled = localStreamRef.current.getAudioTracks()[0]?.enabled;
         if (average > 15 && isTrackEnabled) {
-          setSpeakingUsers(prev => new Set(prev).add(socketId));
+          setSpeakingUsers(prev => new Set(prev).add(socket?.id || 'local'));
         } else {
           setSpeakingUsers(prev => {
             const next = new Set(prev);
-            next.delete(socketId);
+            next.delete(socket?.id || 'local');
             return next;
           });
         }
@@ -90,7 +92,7 @@ export default function RoomView() {
       stream.getAudioTracks().forEach(track => track.enabled = !isMuted);
       return stream;
     } catch (err) {
-      console.error("Microphone access denied:", err);
+      console.error("Media access denied:", err);
       return null;
     }
   };
@@ -100,7 +102,7 @@ export default function RoomView() {
     setSocket(newSocket);
 
     const startWebRTC = async () => {
-      const stream = await initMicrophone(newSocket.id);
+      const stream = await initMedia();
       
       newSocket.on('connect', () => {
         newSocket.emit('join-room', { roomId, userName: user?.name || 'Anonymous' });
@@ -166,13 +168,13 @@ export default function RoomView() {
 
       pc.ontrack = (event) => {
         const remoteStream = event.streams[0];
-        if (!audioElementsRef.current[remoteId]) {
-          const audio = new Audio();
-          audio.srcObject = remoteStream;
-          audio.autoplay = true;
-          audioElementsRef.current[remoteId] = audio;
-          
-          // Audio Analysis for Speaking Indicator
+        setRemoteStreams(prev => ({
+          ...prev,
+          [remoteId]: remoteStream
+        }));
+        
+        // If it's an audio track, handle speaking indicator
+        if (event.track.kind === 'audio') {
           const audioContext = new (window.AudioContext || window.webkitAudioContext)();
           const source = audioContext.createMediaStreamSource(remoteStream);
           const analyser = audioContext.createAnalyser();
@@ -247,6 +249,77 @@ export default function RoomView() {
     }
   };
 
+  const toggleCamera = async () => {
+    try {
+      if (!isCameraOn) {
+        const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const videoTrack = videoStream.getVideoTracks()[0];
+        
+        localStreamRef.current.addTrack(videoTrack);
+        
+        // Add track to all peers
+        Object.values(peersRef.current).forEach(pc => {
+          pc.addTrack(videoTrack, localStreamRef.current);
+        });
+        
+        setIsCameraOn(true);
+      } else {
+        const videoTrack = localStreamRef.current.getVideoTracks()[0];
+        if (videoTrack) {
+          videoTrack.stop();
+          localStreamRef.current.removeTrack(videoTrack);
+          
+          // Remove track from all peers (negotiation needed)
+          Object.values(peersRef.current).forEach(pc => {
+            const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+            if (sender) pc.removeTrack(sender);
+          });
+        }
+        setIsCameraOn(false);
+      }
+    } catch (err) {
+      console.error("Camera error:", err);
+    }
+  };
+
+  const toggleScreenShare = async () => {
+    try {
+      if (!isScreenSharing) {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        const screenTrack = screenStream.getVideoTracks()[0];
+        
+        // Handle screen share stop from browser UI
+        screenTrack.onended = () => {
+          stopScreenShare(screenTrack);
+        };
+
+        // Add track to all peers
+        Object.values(peersRef.current).forEach(pc => {
+          pc.addTrack(screenTrack, localStreamRef.current);
+        });
+        
+        setIsScreenSharing(true);
+      } else {
+        const screenTracks = localStreamRef.current.getTracks().filter(t => t.label.includes('screen') || t.kind === 'video');
+        // This is a bit tricky since localStream might have both cam and screen.
+        // For simplicity, let's assume if screen sharing is active, one of the video tracks is the screen.
+        const videoTrack = localStreamRef.current.getVideoTracks().find(t => t.readyState === 'live');
+        if (videoTrack) stopScreenShare(videoTrack);
+      }
+    } catch (err) {
+      console.error("Screen share error:", err);
+    }
+  };
+
+  const stopScreenShare = (track) => {
+    track.stop();
+    Object.values(peersRef.current).forEach(pc => {
+      const sender = pc.getSenders().find(s => s.track === track);
+      if (sender) pc.removeTrack(sender);
+    });
+    setIsScreenSharing(false);
+  };
+
   const handleSend = (e) => {
     e.preventDefault();
     if (!msgInput.trim() || !socket) return;
@@ -293,9 +366,24 @@ export default function RoomView() {
           <div className="flex items-center gap-4">
              <button 
                 onClick={toggleMute}
+                title={isMuted ? "Unmute" : "Mute"}
                 className={`p-3 rounded-xl transition-all shadow-lg ${isMuted ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 dark:shadow-neon-blue'}`}
              >
                 {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+             </button>
+             <button 
+                onClick={toggleCamera}
+                title={isCameraOn ? "Turn Camera Off" : "Turn Camera On"}
+                className={`p-3 rounded-xl transition-all shadow-lg ${!isCameraOn ? 'bg-slate-500/10 text-slate-500 border border-slate-500/20' : 'bg-brand-500/10 text-brand-500 border border-brand-500/20 shadow-neon-orange'}`}
+             >
+                {isCameraOn ? <Video size={20} /> : <VideoOff size={20} />}
+             </button>
+             <button 
+                onClick={toggleScreenShare}
+                title={isScreenSharing ? "Stop Sharing" : "Share Screen"}
+                className={`p-3 rounded-xl transition-all shadow-lg ${!isScreenSharing ? 'bg-slate-500/10 text-slate-500 border border-slate-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20 shadow-neon-blue'}`}
+             >
+                <MonitorUp size={20} />
              </button>
              <button 
                 onClick={handleLeave}
@@ -306,33 +394,79 @@ export default function RoomView() {
           </div>
         </div>
 
-        <div className="flex-1 bg-[#ffffff] dark:bg-[#000000] border border-[#e2e8f0] dark:border-[#27272a] rounded-xl shadow-sm overflow-hidden relative flex flex-col items-center justify-center p-8 group transition-all duration-500 dark:neon-border-orange scanline">
-          <div className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest bg-slate-100 dark:bg-[#18181b] px-3 py-1.5 rounded-md border border-transparent dark:border-[#27272a]">
-            <Users size={14} /> {users.length} Active
+        <div className="flex-1 bg-[#ffffff] dark:bg-[#000000] border border-[#e2e8f0] dark:border-[#27272a] rounded-xl shadow-sm overflow-hidden relative flex flex-col items-center justify-center transition-all duration-500 dark:neon-border-orange scanline">
+          
+          {/* Main Grid View */}
+          <div className="w-full h-full p-4 overflow-y-auto no-scrollbar">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
+              
+              {/* Local Stream */}
+              <div className="relative aspect-video bg-slate-900 border border-slate-800 rounded-xl overflow-hidden group">
+                {isCameraOn ? (
+                    <video 
+                      autoPlay 
+                      muted 
+                      playsInline 
+                      ref={video => { if (video) video.srcObject = localStreamRef.current; }}
+                      className="w-full h-full object-cover scale-x-[-1]"
+                    />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+                     <div className={`w-20 h-20 rounded-full flex items-center justify-center font-black text-3xl text-white bg-brand-500 shadow-neon-orange`}>
+                        {user?.name.charAt(0).toUpperCase()}
+                     </div>
+                     <span className="text-slate-400 font-bold uppercase tracking-widest text-xs">You (Mic Only)</span>
+                  </div>
+                )}
+                <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 flex items-center gap-2">
+                  <span className="text-[10px] font-black text-white uppercase">{user?.name} (You)</span>
+                  {speakingUsers.has(socket?.id) && <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-neon-blue" />}
+                </div>
+              </div>
+
+              {/* Remote Streams */}
+              {users.filter(u => u.id !== socket?.id).map((u) => (
+                <div key={u.id} className="relative aspect-video bg-slate-900 border border-slate-800 rounded-xl overflow-hidden group">
+                  {remoteStreams[u.id] ? (
+                    <>
+                      <video 
+                        autoPlay 
+                        playsInline 
+                        ref={video => { if (video) video.srcObject = remoteStreams[u.id]; }}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Separate Audio for remote streams if not already playing */}
+                      <audio 
+                        autoPlay 
+                        ref={audio => { if (audio) audio.srcObject = remoteStreams[u.id]; }}
+                      />
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+                       <div className={`w-20 h-20 rounded-full flex items-center justify-center font-black text-3xl text-white bg-slate-700`}>
+                          {u.name.charAt(0).toUpperCase()}
+                       </div>
+                       <span className="text-slate-400 font-bold uppercase tracking-widest text-xs">{u.name} (Mic Only)</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 flex items-center gap-2">
+                    <span className="text-[10px] font-black text-white uppercase">{u.name}</span>
+                    {speakingUsers.has(u.id) && <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-neon-blue" />}
+                  </div>
+                </div>
+              ))}
+
+            </div>
           </div>
 
-          <div className="w-64 h-64 rounded-full border-[6px] border-[#f1f5f9] dark:border-[#27272a] flex items-center justify-center shadow-inner relative transition-colors duration-500">
-             {/* Glow */}
-             <div className="absolute inset-0 bg-brand-500/10 rounded-full blur-[40px] animate-pulse"></div>
-             <div className="text-6xl font-black text-slate-800 dark:text-white tracking-tighter relative z-10 font-sans tabular-nums dark:neon-text-orange">
+          {/* Floating Focus Timer */}
+          <div className="absolute top-6 right-6 flex items-center gap-4 bg-white/90 dark:bg-black/80 backdrop-blur-md px-6 py-3 rounded-2xl border border-[#e2e8f0] dark:border-[#27272a] shadow-xl z-20">
+             <div className="w-2 h-2 bg-brand-500 rounded-full animate-pulse shadow-neon-orange"></div>
+             <div className="text-2xl font-black text-slate-800 dark:text-white tabular-nums dark:neon-text-orange tracking-tight">
                 {formatTime(seconds)}
              </div>
           </div>
-          <p className="mt-8 font-black text-slate-400 uppercase tracking-[0.3em] text-sm">Room Focus Timer</p>
 
-          <div className="absolute bottom-8 flex flex-wrap justify-center gap-4 px-8 w-full">
-             {users.map(u => (
-               <div key={u.id} className="flex flex-col items-center gap-2">
-                 <div className={`w-12 h-12 rounded-full flex items-center justify-center font-black text-white relative transition-all ${u.id === socket?.id ? 'bg-brand-500 shadow-neon-orange' : 'bg-slate-700 dark:bg-slate-800'}`}>
-                    {u.name.charAt(0).toUpperCase()}
-                    {speakingUsers.has(u.id) && (
-                      <motion.div animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0] }} transition={{ repeat: Infinity, duration: 0.8 }} className="absolute inset-0 border-4 border-emerald-400 rounded-full pointer-events-none" />
-                    )}
-                 </div>
-                 <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${speakingUsers.has(u.id) ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500'}`}>{u.id === socket?.id ? 'You' : u.name}</span>
-               </div>
-             ))}
-          </div>
 
         </div>
 

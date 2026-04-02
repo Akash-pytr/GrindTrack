@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useVisibilityManager } from '../hooks/useVisibilityManager';
 import { useSession } from '../context/SessionContext';
-import { Maximize, Palette, X, ChevronRight, Check } from 'lucide-react';
+import { Maximize, Palette, X, ChevronRight, Check, Settings2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 
@@ -385,7 +385,18 @@ export default function TrackerPage() {
           </motion.div>
 
           {/* Secondary Actions */}
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex flex-col items-center gap-4">
+            {!isActive && mode === "focus" && !isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500/10 text-orange-500 border border-orange-500/20 hover:bg-orange-500/20 transition-all font-black text-[10px] uppercase tracking-widest"
+                title="Customize Focus Time"
+              >
+                <Settings2 size={14} />
+                Edit Focus Time
+              </button>
+            )}
+            
             {isActive && (
               <button
                 onClick={() => navigate('/focus', { state: { activeTime, distractions, isActive, totalTime, backgroundImage } })}
