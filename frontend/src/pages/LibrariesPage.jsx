@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Library, Users, Search, Lock, Globe, Code, GraduationCap } from 'lucide-react';
@@ -41,32 +41,40 @@ export default function LibrariesPage() {
     };
   }, []);
 
-  const handleJoin = (roomId, roomName) => {
+  const handleJoin = useCallback((roomId, roomName) => {
     navigate(`/libraries/${roomId}`, { state: { roomName } });
-  };
+  }, [navigate]);
 
-  const handleCreateCustom = (e) => {
+  const handleCreateCustom = useCallback((e) => {
     e.preventDefault();
     if (!customRoomName.trim()) return;
     const roomId = `custom-${customRoomName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}`;
     handleJoin(roomId, customRoomName);
-  };
+    setCustomRoomName('');
+    setShowCustomModal(false);
+  }, [customRoomName, handleJoin]);
 
-  const getCount = (id) => activeCounts[id] || 0;
+  const getCount = useCallback((id) => activeCounts[id] || 0, [activeCounts]);
 
-  // Merge predefined with active custom rooms from the lobby state
-  const activeCustomRooms = Object.keys(activeCounts)
-    .filter(id => id.startsWith('custom-') && activeCounts[id] > 0)
-    .map(id => ({
-      id,
-      name: id.split('-').slice(1, -1).join(' ') || 'Private Study',
-      icon: Lock,
-      color: 'text-amber-500',
-      bg: 'bg-amber-500/10',
-      isCustom: true
-    }));
+  // Merge predefined with active custom rooms from the lobby state — memoized to avoid recalculation on every render
+  const activeCustomRooms = useMemo(() =>
+    Object.keys(activeCounts)
+      .filter(id => id.startsWith('custom-') && activeCounts[id] > 0)
+      .map(id => ({
+        id,
+        name: id.split('-').slice(1, -1).join(' ') || 'Private Study',
+        icon: Lock,
+        color: 'text-amber-500',
+        bg: 'bg-amber-500/10',
+        isCustom: true
+      })),
+  [activeCounts]);
 
-  const allRooms = [...predefinedRooms, ...activeCustomRooms].filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const allRooms = useMemo(() =>
+    [...predefinedRooms, ...activeCustomRooms].filter(r =>
+      r.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+  [activeCustomRooms, searchQuery]);
 
   return (
     <div className="py-8 pt-20 max-w-6xl mx-auto h-full flex flex-col">

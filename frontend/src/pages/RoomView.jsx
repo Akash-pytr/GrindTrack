@@ -145,10 +145,17 @@ export default function RoomView() {
           peersRef.current[id].close();
           delete peersRef.current[id];
         }
-        if (audioElementsRef.current[id]) {
-          audioElementsRef.current[id].remove();
-          delete audioElementsRef.current[id];
-        }
+        // Clean up remote stream state for the departed user
+        setRemoteStreams(prev => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        setSpeakingUsers(prev => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
       });
     };
 
@@ -234,9 +241,11 @@ export default function RoomView() {
     return () => {
       newSocket.disconnect();
       if (localStreamRef.current) {
+        // Stop ALL local tracks (audio + video)
         localStreamRef.current.getTracks().forEach(track => track.stop());
       }
       Object.values(peersRef.current).forEach(pc => pc.close());
+      peersRef.current = {};
     };
   }, [roomId, user]);
 
@@ -435,11 +444,7 @@ export default function RoomView() {
                         ref={video => { if (video) video.srcObject = remoteStreams[u.id]; }}
                         className="w-full h-full object-cover"
                       />
-                      {/* Separate Audio for remote streams if not already playing */}
-                      <audio 
-                        autoPlay 
-                        ref={audio => { if (audio) audio.srcObject = remoteStreams[u.id]; }}
-                      />
+                      {/* Audio is handled by the video element above — no separate <audio> needed */}
                     </>
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center gap-4">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useVisibilityManager } from '../hooks/useVisibilityManager';
 import { useSession } from '../context/SessionContext';
@@ -83,45 +83,40 @@ export default function TrackerPage() {
     }
   }, [location.state, setActiveTime, setDistractions]);
 
-  // Map modes to durations in seconds
-  const modeDurations = {
+  const modeDurations = useMemo(() => ({
     focus: customFocusTime,
     short: 300,
     long: 900
-  };
+  }), [customFocusTime]);
 
   const totalTime = modeDurations[mode];
-  const timeLeft = Math.max(0, totalTime - activeTime);
+  const timeLeft = useMemo(() => Math.max(0, totalTime - activeTime), [totalTime, activeTime]);
 
-  const formatTime = (seconds) => {
+  const formatTime = useCallback((seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  const handleStart = async () => {
+  const handleStart = useCallback(async () => {
     if (!isActive) {
       await startSession();
       setIsActive(true);
     } else {
       setIsActive(false);
-      // We don't automatically end the session on pause in the original backend logic,
-      // but the user's UI expects a "Pause" behavior.
-      // However, current endSession stops the DB record.
-      // I'll stick to Start/Stop for now to preserve session integrity.
     }
-  };
+  }, [isActive, startSession]);
 
-  const handleStop = async () => {
+  const handleStop = useCallback(async () => {
     setIsActive(false);
     await endSession(activeTime, distractions);
     setActiveTime(0);
     setDistractions(0);
-  };
+  }, [activeTime, distractions, endSession, setActiveTime, setDistractions]);
 
-  const setModeTime = (type) => {
+  const setModeTime = useCallback((type) => {
     if (isActive) {
-      if (confirm("Switching modes will end your current session. Continue?")) {
+      if (confirm('Switching modes will end your current session. Continue?')) {
         handleStop();
         setMode(type);
       }
@@ -129,24 +124,26 @@ export default function TrackerPage() {
       setMode(type);
       setActiveTime(0);
     }
-  };
+  }, [isActive, handleStop, setActiveTime]);
 
-  const handleSaveCustomTime = () => {
-    const totalSeconds = (parseInt(editHours) * 3600) + (parseInt(editMinutes) * 60);
+  const handleSaveCustomTime = useCallback(() => {
+    const hrs = Math.max(0, parseInt(editHours) || 0);
+    const mins = Math.max(0, Math.min(59, parseInt(editMinutes) || 0));
+    const totalSeconds = hrs * 3600 + mins * 60;
     if (totalSeconds > 0) {
       setCustomFocusTime(totalSeconds);
       localStorage.setItem('customFocusTime', totalSeconds.toString());
       setIsEditing(false);
       setActiveTime(0);
     }
-  };
+  }, [editHours, editMinutes, setActiveTime]);
 
   // Automatically end session if time runs out
   useEffect(() => {
     if (isActive && timeLeft === 0) {
       handleStop();
-      // Play a sound or notification here if desired
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, isActive]);
 
   return (

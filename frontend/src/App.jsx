@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { useMemo } from 'react';
 import { useAuth } from './context/AuthContext';
 import { useTheme } from './context/ThemeContext';
 import { BookOpen, BarChart3, Trophy, LogOut, CheckCircle, Clock, Sun, Moon, Library } from 'lucide-react';
@@ -17,10 +18,32 @@ import BackgroundBlobs from './components/BackgroundBlobs';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <div className="flex h-screen w-full items-center justify-center bg-white dark:bg-[#09090b]">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+        className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full shadow-[0_0_20px_rgba(249,115,22,0.5)]"
+      />
+    </div>
+  );
   if (!user) return <Navigate to="/login" replace />;
   return children;
 };
+
+// Reusable page wrapper to eliminate repeated motion boilerplate
+const PageWrapper = ({ children, className = 'h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' }) => (
+  <motion.div
+    initial="initial"
+    animate="animate"
+    exit="exit"
+    variants={pageVariants}
+    transition={pageTransition}
+    className={className}
+  >
+    {children}
+  </motion.div>
+);
 
 // High Contrast Layout
 const Layout = ({ children }) => {
@@ -28,13 +51,13 @@ const Layout = ({ children }) => {
   const { isDarkMode, toggleTheme } = useTheme();
   const location = useLocation();
 
-  const navItems = [
+  const navItems = useMemo(() => [
     { path: '/', label: 'Overview', icon: BookOpen },
     { path: '/tracker', label: 'Pomodoro', icon: Clock },
     { path: '/libraries', label: 'Study Rooms', icon: Library },
     { path: '/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/leaderboard', label: 'Hall of Fame', icon: Trophy },
-  ];
+  ], []);
 
   return (
     <div className="flex bg-[#ffffff] dark:bg-[#09090b] h-screen overflow-hidden transition-colors duration-500 relative">
@@ -117,95 +140,85 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route 
-          path="/login" 
+        <Route
+          path="/login"
           element={
-            <motion.div initial="initial" animate="animate" exit="exit" variants={pageVariants} transition={pageTransition} className="h-full">
+            <PageWrapper className="h-full">
               <AuthPage />
-            </motion.div>
-          } 
+            </PageWrapper>
+          }
         />
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             <ProtectedRoute>
               <Layout>
-                <motion.div initial="initial" animate="animate" exit="exit" variants={pageVariants} transition={pageTransition} className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <Dashboard />
-                </motion.div>
+                <PageWrapper><Dashboard /></PageWrapper>
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/tracker" 
+        <Route
+          path="/tracker"
           element={
             <ProtectedRoute>
               <Layout>
-                <motion.div initial="initial" animate="animate" exit="exit" variants={pageVariants} transition={pageTransition} className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <TrackerPage />
-                </motion.div>
+                <PageWrapper><TrackerPage /></PageWrapper>
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/libraries" 
+        <Route
+          path="/libraries"
           element={
             <ProtectedRoute>
               <Layout>
-                <motion.div initial="initial" animate="animate" exit="exit" variants={pageVariants} transition={pageTransition} className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <LibrariesPage />
-                </motion.div>
+                <PageWrapper><LibrariesPage /></PageWrapper>
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/libraries/:roomId" 
+        <Route
+          path="/libraries/:roomId"
           element={
             <ProtectedRoute>
               <Layout>
-                <motion.div initial="initial" animate="animate" exit="exit" variants={pageVariants} transition={pageTransition} className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <RoomView />
-                </motion.div>
+                <PageWrapper><RoomView /></PageWrapper>
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/focus" 
+        <Route
+          path="/focus"
           element={
             <ProtectedRoute>
-              <motion.div initial="initial" animate="animate" exit="exit" variants={{initial: {opacity: 0, scale: 0.95}, animate: {opacity: 1, scale: 1}, exit: {opacity: 0, scale: 1.05}}} transition={{duration: 0.6, ease: "anticipate"}} className="h-full">
+              <PageWrapper
+                className="h-full"
+              >
                 <FocusMode />
-              </motion.div>
+              </PageWrapper>
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/analytics" 
+        <Route
+          path="/analytics"
           element={
             <ProtectedRoute>
               <Layout>
-                <motion.div initial="initial" animate="animate" exit="exit" variants={pageVariants} transition={pageTransition} className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <AnalyticsPage />
-                </motion.div>
+                <PageWrapper><AnalyticsPage /></PageWrapper>
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/leaderboard" 
+        <Route
+          path="/leaderboard"
           element={
             <ProtectedRoute>
               <Layout>
-                <motion.div initial="initial" animate="animate" exit="exit" variants={pageVariants} transition={pageTransition} className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <LeaderboardPage />
-                </motion.div>
+                <PageWrapper><LeaderboardPage /></PageWrapper>
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
       </Routes>
     </AnimatePresence>
