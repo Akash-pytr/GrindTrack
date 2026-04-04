@@ -138,8 +138,8 @@ export const checkPermissions = async (req, res) => {
     const isCreator = room.createdBy.toString() === userId.toString();
 
     res.json({
-      canEnableCamera: room.permissions.canEnableCamera && isCreator,
-      canScreenShare: room.permissions.canScreenShare && isCreator,
+      canEnableCamera: room.permissions.canEnableCamera,
+      canScreenShare: room.permissions.canScreenShare,
       isCustom: room.roomType === 'custom',
       isCreator,
     });

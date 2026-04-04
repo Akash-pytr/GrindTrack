@@ -307,7 +307,7 @@ export default function RoomView() {
   const toggleCamera = async () => {
     // Check permission before allowing camera toggle
     if (!canEnableCamera) {
-      alert('Camera is not available in this room. Only the room creator can enable camera.');
+      alert('Camera is not available here. Video is only supported in Custom Rooms.');
       return;
     }
 
@@ -346,7 +346,7 @@ export default function RoomView() {
   const toggleScreenShare = async () => {
     // Check permission before allowing screen share
     if (!canScreenShare) {
-      alert('Screen sharing is not available in this room. Only the room creator can share screen.');
+      alert('Screen sharing is not available here. It is only supported in Custom Rooms.');
       return;
     }
 
@@ -455,7 +455,7 @@ export default function RoomView() {
                </button>
                {!canEnableCamera && (
                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-40 flex items-center gap-1">
-                   <Lock size={12} /> Only room creator
+                   <Lock size={12} /> Custom Rooms Only
                  </div>
                )}
              </div>
@@ -476,7 +476,7 @@ export default function RoomView() {
                </button>
                {!canScreenShare && (
                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-40 flex items-center gap-1">
-                   <Lock size={12} /> Only room creator
+                   <Lock size={12} /> Custom Rooms Only
                  </div>
                )}
              </div>
