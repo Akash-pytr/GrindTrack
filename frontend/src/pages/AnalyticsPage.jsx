@@ -18,7 +18,7 @@ export default function AnalyticsPage() {
     const fetchAnalytics = async () => {
       try {
         const [weeklyRes, dailyRes] = await Promise.all([
-          api.get('/analytics/weekly'),
+          api.get('/analytics/overview?period=week'),
           api.get('/analytics/daily')
         ]);
         
@@ -28,7 +28,7 @@ export default function AnalyticsPage() {
         }));
         
         setWeeklyStats(formattedWeekly);
-        setDailyStats(dailyRes.data);
+        setDailyStats(dailyRes.data.today);
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch analytics', error);
