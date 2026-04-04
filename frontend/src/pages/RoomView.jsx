@@ -119,8 +119,8 @@ export default function RoomView() {
       };
       checkLocalSpeaking();
 
-      // Start muted by default
-      stream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+      // Always start muted when joining a room
+      stream.getAudioTracks().forEach(track => track.enabled = false);
       return stream;
     } catch (err) {
       console.error("Media access denied:", err);
@@ -192,10 +192,16 @@ export default function RoomView() {
       const stream = await initMedia();
       localStreamRef.current = stream;
 
-      newSocket.on('connect', () => {
-        console.log('Socket connected, joining room...');
+      const joinRoom = () => {
+        console.log('Socket connected or already connected, joining room...');
         newSocket.emit('join-room', { roomId, userName: user?.name || 'Anonymous' });
-      });
+      };
+
+      if (newSocket.connected) {
+        joinRoom();
+      } else {
+        newSocket.on('connect', joinRoom);
+      }
     };
 
     handleConnection();
