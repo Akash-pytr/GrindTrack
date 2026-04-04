@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Send, LogOut, MessageSquare, Mic, MicOff, ShieldCheck, UserMinus, Video, VideoOff, MonitorUp, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useSession } from '../context/SessionContext';
 import api from '../utils/axios';
 import { io } from 'socket.io-client';
 
@@ -11,6 +12,7 @@ export default function RoomView() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { sessionInfo, startSession, endSession } = useSession();
   
   const roomName = location.state?.roomName || roomId.split('-').join(' ');
 
@@ -52,9 +54,38 @@ export default function RoomView() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setSeconds(s => s + 1);
+      // Only increment time if video or screen share is ON
+      if (isCameraOn || isScreenSharing) {
+        setSeconds(s => s + 1);
+      }
     }, 1000);
     return () => clearInterval(interval);
+  }, [isCameraOn, isScreenSharing]);
+
+  // Handle Session Start/Stop
+  useEffect(() => {
+    // Start session when successfully joined
+    if (socket && user && !sessionInfo) {
+      startSession();
+    }
+
+    return () => {
+      // Small ref trick or state to handle unmount session stop
+    };
+  }, [socket, user]);
+
+  // Use a ref to track current seconds for endSession cleanup
+  const secondsRef = useRef(0);
+  useEffect(() => {
+    secondsRef.current = seconds;
+  }, [seconds]);
+
+  useEffect(() => {
+    return () => {
+       if (secondsRef.current > 0) {
+          endSession(secondsRef.current, 0);
+       }
+    };
   }, []);
 
   // Fetch room permissions
@@ -307,7 +338,7 @@ export default function RoomView() {
   const toggleCamera = async () => {
     // Check permission before allowing camera toggle
     if (!canEnableCamera) {
-      alert('Camera is not available here. Video is only supported in Custom Rooms.');
+      alert('Camera access is initializing. Please wait.');
       return;
     }
 
@@ -346,7 +377,7 @@ export default function RoomView() {
   const toggleScreenShare = async () => {
     // Check permission before allowing screen share
     if (!canScreenShare) {
-      alert('Screen sharing is not available here. It is only supported in Custom Rooms.');
+      alert('Screen share access is initializing. Please wait.');
       return;
     }
 
@@ -455,7 +486,7 @@ export default function RoomView() {
                </button>
                {!canEnableCamera && (
                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-40 flex items-center gap-1">
-                   <Lock size={12} /> Custom Rooms Only
+                   <Lock size={12} /> Connecting...
                  </div>
                )}
              </div>
@@ -476,12 +507,15 @@ export default function RoomView() {
                </button>
                {!canScreenShare && (
                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-40 flex items-center gap-1">
-                   <Lock size={12} /> Custom Rooms Only
+                   <Lock size={12} /> Connecting...
                  </div>
                )}
              </div>
              <button 
-                onClick={handleLeave}
+                onClick={() => {
+                   if (seconds > 0) endSession(seconds, 0);
+                   handleLeave();
+                }}
                 className="flex items-center gap-2 bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2 rounded-lg font-black text-sm uppercase tracking-wide hover:scale-105 transition-all"
               >
                 <LogOut size={16} /> Leave
@@ -551,11 +585,31 @@ export default function RoomView() {
           </div>
 
           {/* Floating Focus Timer */}
-          <div className="absolute top-6 right-6 flex items-center gap-4 bg-white/90 dark:bg-black/80 backdrop-blur-md px-6 py-3 rounded-2xl border border-[#e2e8f0] dark:border-[#27272a] shadow-xl z-20">
-             <div className="w-2 h-2 bg-brand-500 rounded-full animate-pulse shadow-neon-orange"></div>
-             <div className="text-2xl font-black text-slate-800 dark:text-white tabular-nums dark:neon-text-orange tracking-tight">
-                {formatTime(seconds)}
-             </div>
+          <div className="absolute top-6 right-6 flex flex-col items-end gap-2 z-20">
+            <div className={`flex items-center gap-4 ${isCameraOn || isScreenSharing ? 'bg-white/90 dark:bg-black/80' : 'bg-orange-500/10'} backdrop-blur-md px-6 py-3 rounded-2xl border border-[#e2e8f0] dark:border-[#27272a] shadow-xl transition-all duration-500`}>
+               <div className={`w-2 h-2 rounded-full ${isCameraOn || isScreenSharing ? 'bg-emerald-500 animate-pulse shadow-neon-blue' : 'bg-orange-500 shadow-neon-orange'} `}></div>
+               <div className={`text-2xl font-black tabular-nums tracking-tight ${isCameraOn || isScreenSharing ? 'text-slate-800 dark:text-white dark:neon-text-orange' : 'text-orange-500'}`}>
+                  {formatTime(seconds)}
+               </div>
+            </div>
+            {!isCameraOn && !isScreenSharing && (
+               <motion.div 
+                 initial={{ opacity: 0, x: 20 }}
+                 animate={{ opacity: 1, x: 0 }}
+                 className="text-[10px] font-black text-orange-500 uppercase tracking-widest bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-orange-500/20"
+               >
+                 Turn on camera or screen to count time
+               </motion.div>
+            )}
+            {(isCameraOn || isScreenSharing) && (
+               <motion.div 
+                 initial={{ opacity: 0, x: 20 }}
+                 animate={{ opacity: 1, x: 0 }}
+                 className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-emerald-500/20"
+               >
+                 Study session being recorded
+               </motion.div>
+            )}
           </div>
 
 

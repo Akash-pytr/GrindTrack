@@ -104,8 +104,8 @@ export const getRoom = async (req, res) => {
         name: roomId,
         roomType: 'predefined',
         permissions: {
-          canEnableCamera: false,
-          canScreenShare: false,
+          canEnableCamera: true,
+          canScreenShare: true,
         },
       });
     }
@@ -125,11 +125,11 @@ export const checkPermissions = async (req, res) => {
 
     const room = await Room.findOne({ roomId });
 
-    // If no room found (predefined room), return restricted permissions
+    // If no room found (predefined room), return allowed permissions
     if (!room) {
       return res.json({
-        canEnableCamera: false,
-        canScreenShare: false,
+        canEnableCamera: true,
+        canScreenShare: true,
         isCustom: false,
       });
     }
@@ -138,8 +138,8 @@ export const checkPermissions = async (req, res) => {
     const isCreator = room.createdBy.toString() === userId.toString();
 
     res.json({
-      canEnableCamera: room.permissions.canEnableCamera,
-      canScreenShare: room.permissions.canScreenShare,
+      canEnableCamera: true, // Always allowed to enable time tracking
+      canScreenShare: true,  // Always allowed to enable time tracking
       isCustom: room.roomType === 'custom',
       isCreator,
     });
