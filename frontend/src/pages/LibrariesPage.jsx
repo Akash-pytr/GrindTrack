@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Library, Users, Search, Lock, Globe, Code, GraduationCap } from 'lucide-react';
 import { staggerContainer, cardItem } from '../utils/animations';
 import { useAuth } from '../context/AuthContext';
+import api from '../utils/axios';
 import { io } from 'socket.io-client';
 
 const predefinedRooms = [
@@ -19,21 +20,61 @@ export default function LibrariesPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeCounts, setActiveCounts] = useState({});
+  const [customRoomsFromDB, setCustomRoomsFromDB] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [customRoomName, setCustomRoomName] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Fetch custom rooms from database
+  useEffect(() => {
+    const fetchCustomRooms = async () => {
+      try {
+        // Fetch all active custom rooms created by any user
+        const { data } = await api.get('/rooms/active');
+        setCustomRoomsFromDB(data || []);
+      } catch (error) {
+        console.error('Failed to fetch custom rooms:', error);
+      }
+    };
+
+    fetchCustomRooms();
+  }, []);
 
   useEffect(() => {
-    // Connect just to get lobby stats
-    // Assuming backend runs on 5050 in dev
+    // Connect to socket server for real-time lobby updates
     const socket = io();
 
+    // Set up listener FIRST before any connection
+    socket.on('lobby-state', (counts) => {
+      console.log('Received lobby-state update:', counts);
+      setActiveCounts(counts);
+    });
+
     socket.on('connect', () => {
+      console.log('Socket connected, requesting lobby state');
       socket.emit('get-lobby-state');
     });
 
-    socket.on('lobby-state', (counts) => {
-      setActiveCounts(counts);
+    // Listen for new custom rooms created by other users
+    socket.on('custom-room-created', () => {
+      console.log('Custom room created, refreshing...');
+      // Refresh custom rooms list when a new room is created
+      const fetchCustomRooms = async () => {
+        try {
+          const { data } = await api.get('/rooms/active');
+          setCustomRoomsFromDB(data || []);
+        } catch (error) {
+          console.error('Failed to fetch custom rooms:', error);
+        }
+      };
+      fetchCustomRooms();
+    });
+
+    // Listen for room disposal (when last user leaves)
+    socket.on('room-disposed', (roomId) => {
+      console.log('Room disposed:', roomId);
+      setCustomRoomsFromDB(prev => prev.filter(room => room.roomId !== roomId));
     });
 
     return () => {
@@ -45,30 +86,38 @@ export default function LibrariesPage() {
     navigate(`/libraries/${roomId}`, { state: { roomName } });
   }, [navigate]);
 
-  const handleCreateCustom = useCallback((e) => {
+  const handleCreateCustom = useCallback(async (e) => {
     e.preventDefault();
-    if (!customRoomName.trim()) return;
-    const roomId = `custom-${customRoomName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}`;
-    handleJoin(roomId, customRoomName);
-    setCustomRoomName('');
-    setShowCustomModal(false);
-  }, [customRoomName, handleJoin]);
+    if (!customRoomName.trim() || isCreating) return;
+
+    setIsCreating(true);
+    try {
+      const { data } = await api.post('/rooms/create', { roomName: customRoomName });
+      setCustomRoomsFromDB(prev => [data, ...prev]);
+      handleJoin(data.roomId, data.name);
+      setCustomRoomName('');
+      setShowCustomModal(false);
+    } catch (error) {
+      console.error('Failed to create room:', error);
+      alert('Failed to create room. Please try again.');
+    } finally {
+      setIsCreating(false);
+    }
+  }, [customRoomName, handleJoin, isCreating]);
 
   const getCount = useCallback((id) => activeCounts[id] || 0, [activeCounts]);
 
-  // Merge predefined with active custom rooms from the lobby state — memoized to avoid recalculation on every render
+  // Combine custom rooms from database with active lobby count
   const activeCustomRooms = useMemo(() =>
-    Object.keys(activeCounts)
-      .filter(id => id.startsWith('custom-') && activeCounts[id] > 0)
-      .map(id => ({
-        id,
-        name: id.split('-').slice(1, -1).join(' ') || 'Private Study',
-        icon: Lock,
-        color: 'text-amber-500',
-        bg: 'bg-amber-500/10',
-        isCustom: true
-      })),
-  [activeCounts]);
+    customRoomsFromDB.map(room => ({
+      id: room.roomId,
+      name: room.name,
+      icon: Lock,
+      color: 'text-amber-500',
+      bg: 'bg-amber-500/10',
+      isCustom: true
+    })),
+  [customRoomsFromDB]);
 
   const allRooms = useMemo(() =>
     [...predefinedRooms, ...activeCustomRooms].filter(r =>
@@ -176,8 +225,10 @@ export default function LibrariesPage() {
                   className="w-full bg-slate-50 dark:bg-[#000000] border border-[#e2e8f0] dark:border-[#27272a] rounded-xl px-4 py-3 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent font-bold mb-6 transition-all"
                 />
                 <div className="flex gap-4">
-                  <button type="button" onClick={() => setShowCustomModal(false)} className="flex-1 px-4 py-3 font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-xl transition-colors">Cancel</button>
-                  <button type="submit" disabled={!customRoomName.trim()} className="flex-1 px-4 py-3 font-bold bg-brand-500 text-white rounded-xl hover:bg-brand-600 disabled:opacity-50 transition-colors">Launch Room</button>
+                  <button type="button" onClick={() => setShowCustomModal(false)} disabled={isCreating} className="flex-1 px-4 py-3 font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-xl transition-colors disabled:opacity-50">Cancel</button>
+                  <button type="submit" disabled={!customRoomName.trim() || isCreating} className="flex-1 px-4 py-3 font-bold bg-brand-500 text-white rounded-xl hover:bg-brand-600 disabled:opacity-50 transition-colors">
+                    {isCreating ? 'Creating...' : 'Launch Room'}
+                  </button>
                 </div>
               </form>
             </motion.div>

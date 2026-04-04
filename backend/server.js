@@ -9,6 +9,8 @@ import authRoutes from './routes/authRoutes.js';
 import sessionRoutes from './routes/sessionRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import leaderboardRoutes from './routes/leaderboardRoutes.js';
+import roomRoutes from './routes/roomRoutes.js';
+import Room from './models/Room.js';
 
 dotenv.config();
 
@@ -25,11 +27,18 @@ const io = new Server(httpServer, {
 app.use(cors());
 app.use(express.json());
 
+// Attach io instance to requests
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/session', sessionRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/rooms', roomRoutes);
 
 // Add a root endpoint
 app.get('/', (req, res) => res.send('API is running...'));
@@ -102,7 +111,7 @@ io.on('connection', (socket) => {
   });
 
   // Common function to handle room exit/disconnect logic
-  const handleDisconnectFromRoom = (sock, roomId) => {
+  const handleDisconnectFromRoom = async (sock, roomId) => {
      const roomData = activeRooms[roomId];
      if (roomData && roomData.users.has(sock.id)) {
         console.log(`User ${sock.id} leaving room: ${roomId}`);
@@ -119,9 +128,20 @@ io.on('connection', (socket) => {
         const remainingUsers = Array.from(roomData.userNames.entries()).map(([id, name]) => ({ id, name }));
         io.to(roomId).emit('room-users', { users: remainingUsers, ownerId: roomData.ownerId });
 
-        // Clean up empty custom rooms
+        // Clean up empty custom rooms and delete from database
         if (roomData.users.size === 0) {
           delete activeRooms[roomId];
+          // Delete custom room from database when it becomes empty
+          if (roomId.startsWith('custom-')) {
+            try {
+              await Room.findOneAndDelete({ roomId });
+              console.log(`Custom room ${roomId} deleted from database`);
+              // Broadcast room disposal to all clients
+              io.emit('room-disposed', roomId);
+            } catch (err) {
+              console.error(`Error deleting room ${roomId} from database:`, err);
+            }
+          }
         }
         
         broadcastLobbyState();

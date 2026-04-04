@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Send, LogOut, MessageSquare, Mic, MicOff, ShieldCheck, UserMinus, Video, VideoOff, MonitorUp } from 'lucide-react';
+import { Users, Send, LogOut, MessageSquare, Mic, MicOff, ShieldCheck, UserMinus, Video, VideoOff, MonitorUp, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import api from '../utils/axios';
 import { io } from 'socket.io-client';
 
 export default function RoomView() {
@@ -21,6 +22,12 @@ export default function RoomView() {
   const [speakingUsers, setSpeakingUsers] = useState(new Set());
   const [moderatorId, setModeratorId] = useState(null);
   const [activeTab, setActiveTab] = useState('chat'); // 'chat' or 'members'
+  
+  // Room permissions states
+  const [canEnableCamera, setCanEnableCamera] = useState(false);
+  const [canScreenShare, setCanScreenShare] = useState(false);
+  const [isRoomOwner, setIsRoomOwner] = useState(false);
+  const [permissionsLoading, setPermissionsLoading] = useState(true);
   
   const [seconds, setSeconds] = useState(0);
 
@@ -49,6 +56,30 @@ export default function RoomView() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Fetch room permissions
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const { data } = await api.get(`/rooms/${roomId}/permissions`);
+        setCanEnableCamera(data.canEnableCamera);
+        setCanScreenShare(data.canScreenShare);
+        setIsRoomOwner(data.isCreator);
+      } catch (error) {
+        console.error('Failed to fetch permissions:', error);
+        // Default: no permissions for prebuilt rooms
+        setCanEnableCamera(false);
+        setCanScreenShare(false);
+        setIsRoomOwner(false);
+      } finally {
+        setPermissionsLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchPermissions();
+    }
+  }, [roomId, user]);
 
   // Initialize Media (Audio/Video)
   const initMedia = async () => {
@@ -101,153 +132,162 @@ export default function RoomView() {
     const newSocket = io();
     setSocket(newSocket);
 
-    const startWebRTC = async () => {
-      const stream = await initMedia();
-      
-      newSocket.on('connect', () => {
-        newSocket.emit('join-room', { roomId, userName: user?.name || 'Anonymous' });
-      });
-
-      newSocket.on('room-users', async ({ users, ownerId }) => {
-        setUsers(users);
-        setModeratorId(ownerId);
-        
-        // Logic to initiate peer connections for new users
-        for (const remoteUser of users) {
-          if (remoteUser.id !== newSocket.id && !peersRef.current[remoteUser.id]) {
-            // We initiate if our ID is "greater" than theirs (arbitrary logic to ensure only one offer)
-            if (newSocket.id > remoteUser.id) {
-              createPeerConnection(remoteUser.id, newSocket, stream, true);
-            }
-          }
-        }
-      });
-
-      newSocket.on('rtc-signal', async ({ from, signal }) => {
-        if (signal.type === 'offer') {
-          const pc = createPeerConnection(from, newSocket, stream, false);
-          await pc.setRemoteDescription(new RTCSessionDescription(signal));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          newSocket.emit('rtc-signal', { to: from, from: newSocket.id, signal: answer });
-        } else if (signal.type === 'answer') {
-          const pc = peersRef.current[from];
-          if (pc) await pc.setRemoteDescription(new RTCSessionDescription(signal));
-        } else if (signal.candidate) {
-          const pc = peersRef.current[from];
-          if (pc) await pc.addIceCandidate(new RTCIceCandidate(signal));
-        }
-      });
-
-      newSocket.on('user-left', ({ id, message }) => {
-        setMessages(prev => [...prev, { id: Date.now(), system: true, text: message }]);
-        if (peersRef.current[id]) {
-          peersRef.current[id].close();
-          delete peersRef.current[id];
-        }
-        // Clean up remote stream state for the departed user
-        setRemoteStreams(prev => {
-          const next = { ...prev };
-          delete next[id];
-          return next;
-        });
-        setSpeakingUsers(prev => {
-          const next = new Set(prev);
-          next.delete(id);
-          return next;
-        });
-      });
-    };
-
-    const createPeerConnection = (remoteId, socket, stream, isOfferer) => {
-      const pc = new RTCPeerConnection(rtcConfig);
-      peersRef.current[remoteId] = pc;
-
-      if (stream) {
-        stream.getTracks().forEach(track => pc.addTrack(track, stream));
-      }
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit('rtc-signal', { to: remoteId, from: socket.id, signal: event.candidate });
-        }
-      };
-
-      pc.ontrack = (event) => {
-        const remoteStream = event.streams[0];
-        setRemoteStreams(prev => ({
-          ...prev,
-          [remoteId]: remoteStream
-        }));
-        
-        // If it's an audio track, handle speaking indicator
-        if (event.track.kind === 'audio') {
-          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-          const source = audioContext.createMediaStreamSource(remoteStream);
-          const analyser = audioContext.createAnalyser();
-          analyser.fftSize = 512;
-          source.connect(analyser);
-          
-          const bufferLength = analyser.frequencyBinCount;
-          const dataArray = new Uint8Array(bufferLength);
-          
-          const checkSpeaking = () => {
-            analyser.getByteFrequencyData(dataArray);
-            let sum = 0;
-            for(let i=0; i<bufferLength; i++) sum += dataArray[i];
-            const average = sum / bufferLength;
-            
-            if (average > 15) { // Threshold for speaking
-              setSpeakingUsers(prev => new Set(prev).add(remoteId));
-            } else {
-              setSpeakingUsers(prev => {
-                const next = new Set(prev);
-                next.delete(remoteId);
-                return next;
-              });
-            }
-            if (peersRef.current[remoteId]) requestAnimationFrame(checkSpeaking);
-          };
-          checkSpeaking();
-        }
-      };
-
-      if (isOfferer) {
-        pc.onnegotiationneeded = async () => {
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          socket.emit('rtc-signal', { to: remoteId, from: socket.id, signal: offer });
-        };
-      }
-
-      return pc;
-    };
-
-    startWebRTC();
+    // Set up all event listeners FIRST before any connections
+    newSocket.on('room-users', ({ users, ownerId }) => {
+      console.log('Received room-users:', users);
+      setUsers(users);
+      setModeratorId(ownerId);
+    });
 
     newSocket.on('user-joined', ({ message }) => {
       setMessages(prev => [...prev, { id: Date.now(), system: true, text: message }]);
     });
 
+    newSocket.on('user-left', ({ id, message }) => {
+      console.log('User left:', id);
+      setMessages(prev => [...prev, { id: Date.now(), system: true, text: message }]);
+      if (peersRef.current[id]) {
+        peersRef.current[id].close();
+        delete peersRef.current[id];
+      }
+      setRemoteStreams(prev => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      setSpeakingUsers(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    });
+
     newSocket.on('kicked', ({ message }) => {
-       alert(message);
-       navigate('/libraries');
+      alert(message);
+      navigate('/libraries');
     });
 
     newSocket.on('receive-message', (msg) => {
       setMessages(prev => [...prev, msg]);
     });
 
+    newSocket.on('rtc-signal', async ({ from, signal }) => {
+      if (signal.type === 'offer') {
+        const pc = createPeerConnection(from, newSocket, localStreamRef.current, false);
+        await pc.setRemoteDescription(new RTCSessionDescription(signal));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        newSocket.emit('rtc-signal', { to: from, from: newSocket.id, signal: answer });
+      } else if (signal.type === 'answer') {
+        const pc = peersRef.current[from];
+        if (pc) await pc.setRemoteDescription(new RTCSessionDescription(signal));
+      } else if (signal.candidate) {
+        const pc = peersRef.current[from];
+        if (pc) await pc.addIceCandidate(new RTCIceCandidate(signal));
+      }
+    });
+
+    // Now handle connection and join room
+    const handleConnection = async () => {
+      const stream = await initMedia();
+      localStreamRef.current = stream;
+
+      newSocket.on('connect', () => {
+        console.log('Socket connected, joining room...');
+        newSocket.emit('join-room', { roomId, userName: user?.name || 'Anonymous' });
+      });
+    };
+
+    handleConnection();
+
     return () => {
       newSocket.disconnect();
       if (localStreamRef.current) {
-        // Stop ALL local tracks (audio + video)
         localStreamRef.current.getTracks().forEach(track => track.stop());
       }
       Object.values(peersRef.current).forEach(pc => pc.close());
       peersRef.current = {};
     };
   }, [roomId, user]);
+
+  // Create peer connections when users join
+  useEffect(() => {
+    if (!socket || !localStreamRef.current) return;
+
+    // Create peer connections for new users
+    for (const remoteUser of users) {
+      if (remoteUser.id !== socket.id && !peersRef.current[remoteUser.id]) {
+        // We initiate if our ID is "greater" than theirs (arbitrary logic to ensure only one offer)
+        if (socket.id > remoteUser.id) {
+          createPeerConnection(remoteUser.id, socket, localStreamRef.current, true);
+        }
+      }
+    }
+  }, [users, socket]);
+
+  const createPeerConnection = (remoteId, socket, stream, isOfferer) => {
+    const pc = new RTCPeerConnection(rtcConfig);
+    peersRef.current[remoteId] = pc;
+
+    if (stream) {
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+    }
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit('rtc-signal', { to: remoteId, from: socket.id, signal: event.candidate });
+      }
+    };
+
+    pc.ontrack = (event) => {
+      const remoteStream = event.streams[0];
+      setRemoteStreams(prev => ({
+        ...prev,
+        [remoteId]: remoteStream
+      }));
+      
+      // If it's an audio track, handle speaking indicator
+      if (event.track.kind === 'audio') {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(remoteStream);
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512;
+        source.connect(analyser);
+        
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        
+        const checkSpeaking = () => {
+          analyser.getByteFrequencyData(dataArray);
+          let sum = 0;
+          for(let i=0; i<bufferLength; i++) sum += dataArray[i];
+          const average = sum / bufferLength;
+          
+          if (average > 15) { // Threshold for speaking
+            setSpeakingUsers(prev => new Set(prev).add(remoteId));
+          } else {
+            setSpeakingUsers(prev => {
+              const next = new Set(prev);
+              next.delete(remoteId);
+              return next;
+            });
+          }
+          if (peersRef.current[remoteId]) requestAnimationFrame(checkSpeaking);
+        };
+        checkSpeaking();
+      }
+    };
+
+    if (isOfferer) {
+      pc.onnegotiationneeded = async () => {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        socket.emit('rtc-signal', { to: remoteId, from: socket.id, signal: offer });
+      };
+    }
+
+    return pc;
+  };
 
   const toggleMute = () => {
     if (localStreamRef.current) {
@@ -259,6 +299,12 @@ export default function RoomView() {
   };
 
   const toggleCamera = async () => {
+    // Check permission before allowing camera toggle
+    if (!canEnableCamera) {
+      alert('Camera is not available in this room. Only the room creator can enable camera.');
+      return;
+    }
+
     try {
       if (!isCameraOn) {
         const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -292,6 +338,12 @@ export default function RoomView() {
   };
 
   const toggleScreenShare = async () => {
+    // Check permission before allowing screen share
+    if (!canScreenShare) {
+      alert('Screen sharing is not available in this room. Only the room creator can share screen.');
+      return;
+    }
+
     try {
       if (!isScreenSharing) {
         const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
@@ -380,20 +432,48 @@ export default function RoomView() {
              >
                 {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
              </button>
-             <button 
-                onClick={toggleCamera}
-                title={isCameraOn ? "Turn Camera Off" : "Turn Camera On"}
-                className={`p-3 rounded-xl transition-all shadow-lg ${!isCameraOn ? 'bg-slate-500/10 text-slate-500 border border-slate-500/20' : 'bg-brand-500/10 text-brand-500 border border-brand-500/20 shadow-neon-orange'}`}
-             >
-                {isCameraOn ? <Video size={20} /> : <VideoOff size={20} />}
-             </button>
-             <button 
-                onClick={toggleScreenShare}
-                title={isScreenSharing ? "Stop Sharing" : "Share Screen"}
-                className={`p-3 rounded-xl transition-all shadow-lg ${!isScreenSharing ? 'bg-slate-500/10 text-slate-500 border border-slate-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20 shadow-neon-blue'}`}
-             >
-                <MonitorUp size={20} />
-             </button>
+             <div className="relative group">
+               <button 
+                  onClick={canEnableCamera ? toggleCamera : null}
+                  disabled={!canEnableCamera}
+                  title={canEnableCamera ? (isCameraOn ? "Turn Camera Off" : "Turn Camera On") : "Camera not available in this room"}
+                  className={`p-3 rounded-xl transition-all shadow-lg ${
+                    !canEnableCamera 
+                      ? 'bg-slate-500/10 text-slate-400 border border-slate-500/20 cursor-not-allowed opacity-50' 
+                      : !isCameraOn 
+                        ? 'bg-slate-500/10 text-slate-500 border border-slate-500/20' 
+                        : 'bg-brand-500/10 text-brand-500 border border-brand-500/20 shadow-neon-orange'
+                  }`}
+               >
+                  {isCameraOn ? <Video size={20} /> : <VideoOff size={20} />}
+               </button>
+               {!canEnableCamera && (
+                 <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-40 flex items-center gap-1">
+                   <Lock size={12} /> Only room creator
+                 </div>
+               )}
+             </div>
+             <div className="relative group">
+               <button 
+                  onClick={canScreenShare ? toggleScreenShare : null}
+                  disabled={!canScreenShare}
+                  title={canScreenShare ? (isScreenSharing ? "Stop Sharing" : "Share Screen") : "Screen sharing not available in this room"}
+                  className={`p-3 rounded-xl transition-all shadow-lg ${
+                    !canScreenShare 
+                      ? 'bg-slate-500/10 text-slate-400 border border-slate-500/20 cursor-not-allowed opacity-50' 
+                      : !isScreenSharing 
+                        ? 'bg-slate-500/10 text-slate-500 border border-slate-500/20' 
+                        : 'bg-blue-500/10 text-blue-500 border border-blue-500/20 shadow-neon-blue'
+                  }`}
+               >
+                  <MonitorUp size={20} />
+               </button>
+               {!canScreenShare && (
+                 <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-40 flex items-center gap-1">
+                   <Lock size={12} /> Only room creator
+                 </div>
+               )}
+             </div>
              <button 
                 onClick={handleLeave}
                 className="flex items-center gap-2 bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2 rounded-lg font-black text-sm uppercase tracking-wide hover:scale-105 transition-all"
