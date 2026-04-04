@@ -502,7 +502,7 @@ export default function RoomView() {
                       autoPlay 
                       muted 
                       playsInline 
-                      ref={video => { if (video) video.srcObject = localStreamRef.current; }}
+                      ref={video => { if (video && video.srcObject !== localStreamRef.current) video.srcObject = localStreamRef.current; }}
                       className="w-full h-full object-cover scale-x-[-1]"
                     />
                 ) : (
@@ -527,7 +527,7 @@ export default function RoomView() {
                       <video 
                         autoPlay 
                         playsInline 
-                        ref={video => { if (video) video.srcObject = remoteStreams[u.id]; }}
+                        ref={video => { if (video && video.srcObject !== remoteStreams[u.id]) video.srcObject = remoteStreams[u.id]; }}
                         className="w-full h-full object-cover"
                       />
                       {/* Audio is handled by the video element above — no separate <audio> needed */}
