@@ -5,6 +5,7 @@ import { useSession } from '../context/SessionContext';
 import { Maximize, Palette, X, ChevronRight, Check, Settings2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import ThreeTimerRing from '../components/three/ThreeTimerRing';
 
 const THEMES = {
   "Aesthetic": [
@@ -198,7 +199,7 @@ export default function TrackerPage() {
               {/* Sidebar */}
               <div className="w-full md:w-64 bg-black/30 p-8 border-r border-white/5 flex flex-col gap-2">
                 <div className="flex items-center gap-3 mb-8">
-                  <Palette className="text-orange-500" size={24} />
+                  <Palette className="text-brand-400" size={24} />
                   <h3 className="text-xl font-black text-white uppercase tracking-tighter">Themes</h3>
                 </div>
                 {Object.keys(THEMES).map((cat) => (
@@ -207,7 +208,7 @@ export default function TrackerPage() {
                     onClick={() => setSelectedCategory(cat)}
                     className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${
                       selectedCategory === cat 
-                        ? "bg-orange-500 text-black shadow-lg" 
+                        ? "bg-gradient-to-r from-brand-600 to-brand-400 text-white shadow-lg shadow-brand-500/40" 
                         : "text-slate-400 hover:text-white hover:bg-white/5"
                     }`}
                   >
@@ -253,7 +254,7 @@ export default function TrackerPage() {
                       <div className="absolute bottom-4 left-4 flex items-center justify-between right-4">
                         <span className="text-sm font-bold text-white tracking-tight">{theme.name}</span>
                         {backgroundImage === theme.url && (
-                          <div className="bg-orange-500 p-1 rounded-full text-black">
+                          <div className="bg-gradient-to-br from-brand-500 to-accent-500 p-1 rounded-full text-white">
                             <Check size={14} strokeWidth={4} />
                           </div>
                         )}
@@ -267,96 +268,142 @@ export default function TrackerPage() {
         )}
       </AnimatePresence>
       
-      {/* Aesthetic Container (Made transparent for themes) */}
-      <div className="w-full max-w-[420px] p-8 rounded-[2.5rem] relative overflow-hidden">
+      {/* Enhanced Aesthetic Container with Glassmorphism */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-[500px] px-10 py-14 rounded-[3.5rem] relative overflow-hidden backdrop-blur-3xl border border-white/30 bg-gradient-to-br from-white/15 via-white/8 to-white/5 shadow-2xl shadow-black/20"
+      >
         
-        {/* Decorative elements */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Decorative animated elements */}
+        <motion.div 
+          animate={{ rotate: 360, scale: [1, 1.1, 1] }}
+          transition={{ rotate: { duration: 20, repeat: Infinity, ease: "linear" }, scale: { duration: 4, repeat: Infinity } }}
+          className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-500/30 to-accent-500/10 rounded-full blur-3xl pointer-events-none" 
+        />
+        <motion.div 
+          animate={{ rotate: -360, scale: [1, 1.1, 1] }}
+          transition={{ rotate: { duration: 25, repeat: Infinity, ease: "linear" }, scale: { duration: 5, repeat: Infinity, delay: 0.5 } }}
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-blue-500/20 to-purple-500/10 rounded-full blur-3xl pointer-events-none" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent rounded-[3.5rem] pointer-events-none" />
 
-        {/* Mode Switch (Simplified and Beautiful) */}
-        <div className="flex bg-white/10 dark:bg-white/5 rounded-2xl p-1.5 mb-10 relative z-10 border border-white/5">
+        {/* Enhanced Mode Switch */}
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex gap-1 bg-gradient-to-r from-white/15 to-white/10 dark:from-white/10 dark:to-white/5 rounded-2xl p-2.5 mb-12 relative z-10 border border-white/20 backdrop-blur-xl shadow-lg shadow-brand-500/10"
+        >
           {[
-            { label: "Focus", key: "focus" },
-            { label: "Short", key: "short" },
-            { label: "Long", key: "long" },
+            { label: "Focus", key: "focus", icon: "⚡" },
+            { label: "Short", key: "short", icon: "⏱️" },
+            { label: "Long", key: "long", icon: "🎯" },
           ].map((item) => (
-            <button
+            <motion.button
               key={item.key}
               onClick={() => setModeTime(item.key)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              className={`flex-1 py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${
                 mode === item.key
-                  ? "bg-gradient-to-r from-orange-500 to-yellow-400 text-black shadow-lg shadow-orange-500/20"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-gradient-to-br from-brand-600 via-brand-500 to-brand-400 text-white shadow-lg shadow-brand-500/50 scale-105 font-black text-base"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-white/10 border border-transparent hover:border-white/10"
               }`}
             >
+              <span className="text-lg">{item.icon}</span>
               {item.label}
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
 
         {/* Timer Core */}
         <div className="flex flex-col items-center justify-center relative z-10">
           <motion.div
             onClick={isActive ? handleStop : (isEditing ? null : handleStart)}
-            className="w-64 h-64 rounded-full border-[6px] border-white/5 flex items-center justify-center relative shadow-[0_0_50px_rgba(0,0,0,0.2)] cursor-pointer group"
+            className="w-72 h-72 rounded-full flex items-center justify-center relative cursor-pointer group"
             animate={{ scale: isActive ? 1.02 : 1 }}
-            whileHover={{ scale: isEditing ? 1 : 1.05 }}
-            whileTap={{ scale: isEditing ? 1 : 0.95 }}
+            whileHover={{ scale: isEditing ? 1 : 1.04 }}
+            whileTap={{ scale: isEditing ? 1 : 0.96 }}
             transition={{ duration: 0.5, ease: "anticipate" }}
           >
-            {/* Hover Glow Effect */}
-            {!isEditing && <div className="absolute inset-0 rounded-full bg-orange-500/0 group-hover:bg-orange-500/5 transition-colors duration-300" />}
+            {/* Three.js 3D Torus Ring */}
+            <ThreeTimerRing
+              progress={totalTime > 0 ? timeLeft / totalTime : 1}
+              isDistracted={isDistracted}
+              isActive={isActive}
+            />
 
-            {/* Animated Rotating Border */}
-            {isActive && !isDistracted && (
-              <div className="absolute inset-[-6px] rounded-full border-t-[6px] border-orange-500 animate-spin-slow shadow-[0_0_15px_rgba(249,115,22,0.4)]" />
+            {/* Enhanced Hover Glow Effect */}
+            <motion.div 
+              animate={{ opacity: isActive ? 0.4 : 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 rounded-full bg-gradient-to-br from-brand-500/20 to-transparent pointer-events-none" 
+            />
+            {!isEditing && (
+              <motion.div 
+                className="absolute inset-0 rounded-full bg-brand-500/0 group-hover:bg-brand-500/10 transition-colors duration-300 z-10" 
+              />
             )}
 
             <div className="flex flex-col items-center">
               {isEditing ? (
-                <div className="flex flex-col items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex items-center gap-2">
+                <motion.div 
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="flex flex-col items-center gap-3 backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6" 
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center gap-3">
                     <div className="flex flex-col items-center">
                       <input 
                         type="number" 
                         value={editHours} 
                         onChange={(e) => setEditHours(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-16 bg-white/5 border border-white/10 rounded-lg text-3xl font-black text-center text-white focus:outline-none focus:border-orange-500"
+                        className="w-18 bg-white/10 border border-white/20 rounded-lg text-3xl font-black text-center text-white focus:outline-none focus:border-brand-500 focus:bg-brand-500/10 transition-all"
                         min="0"
                       />
-                      <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Hrs</span>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase mt-2">Hours</span>
                     </div>
-                    <span className="text-3xl font-black text-white">:</span>
+                    <span className="text-3xl font-black text-white/40">:</span>
                     <div className="flex flex-col items-center">
                       <input 
                         type="number" 
                         value={editMinutes} 
                         onChange={(e) => setEditMinutes(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
-                        className="w-16 bg-white/5 border border-white/10 rounded-lg text-3xl font-black text-center text-white focus:outline-none focus:border-orange-500"
+                        className="w-18 bg-white/10 border border-white/20 rounded-lg text-3xl font-black text-center text-white focus:outline-none focus:border-brand-500 focus:bg-brand-500/10 transition-all"
                         min="0"
                         max="59"
                       />
-                      <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Min</span>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase mt-2">Minutes</span>
                     </div>
                   </div>
-                  <div className="flex gap-2 mt-4">
-                    <button 
+                  <div className="flex gap-2 mt-4 w-full">
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={handleSaveCustomTime}
-                      className="px-4 py-1.5 bg-orange-500 text-black text-xs font-black rounded-lg hover:bg-orange-400 transition-colors"
+                      className="flex-1 px-4 py-2 bg-gradient-to-r from-brand-600 to-brand-400 text-white text-xs font-black rounded-lg hover:shadow-lg hover:shadow-brand-500/40 transition-all"
                     >
                       SAVE
-                    </button>
-                    <button 
+                    </motion.button>
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => setIsEditing(false)}
-                      className="px-4 py-1.5 bg-white/10 text-white text-xs font-black rounded-lg hover:bg-white/20 transition-colors"
+                      className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-black rounded-lg border border-white/10 transition-all"
                     >
                       CANCEL
-                    </button>
+                    </motion.button>
                   </div>
-                </div>
+                </motion.div>
               ) : (
-                <>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex flex-col items-center"
+                >
                   <motion.h1 
                     key={timeLeft}
                     initial={{ opacity: 0.8, scale: 0.98 }}
@@ -367,70 +414,132 @@ export default function TrackerPage() {
                         setIsEditing(true);
                       }
                     }}
-                    whileHover={!isActive && mode === "focus" ? { scale: 1.05, color: "#f97316" } : {}}
-                    className={`text-6xl font-black tracking-tighter transition-colors duration-300 cursor-pointer ${isDistracted && isActive ? 'text-red-500' : 'text-slate-800 dark:text-white'}`}
-                    title={!isActive && mode === "focus" ? "Click digits to edit time" : ""}
+                    whileHover={!isActive && mode === "focus" ? { scale: 1.08, color: "#f97316" } : {}}
+                    className={`text-7xl md:text-8xl font-black tracking-tighter transition-all duration-300 cursor-pointer ${
+                      isDistracted && isActive 
+                        ? 'text-red-500 drop-shadow-lg drop-shadow-red-500/50' 
+                        : 'text-slate-800 dark:text-white drop-shadow-md'
+                    }`}
+                    title={!isActive && mode === "focus" ? "Click to edit time" : ""}
                   >
                     {formatTime(timeLeft)}
                   </motion.h1>
-                  <div className={`mt-2 text-[10px] font-black uppercase tracking-[0.3em] ${isDistracted && isActive ? 'text-red-400' : 'text-slate-400 dark:text-slate-500'}`}>
-                    {isActive ? (isDistracted ? "Distracted" : "Focusing") : "Click to Start"}
-                  </div>
-                </>
+                  <motion.div 
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className={`mt-3 text-xs font-black uppercase tracking-[0.2em] transition-colors ${
+                      isDistracted && isActive 
+                        ? 'text-red-400' 
+                        : isActive ? 'text-brand-400' : 'text-slate-400 dark:text-slate-500'
+                    }`}
+                  >
+                    {isActive ? (isDistracted ? "⚠️ Distracted" : "✨ Focusing") : "👆 Click to Start"}
+                  </motion.div>
+                </motion.div>
               )}
             </div>
           </motion.div>
 
-          {/* Secondary Actions */}
-          <div className="mt-8 flex flex-col items-center gap-4">
+          {/* Enhanced Secondary Actions */}
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-10 flex flex-col items-center gap-4 w-full px-8"
+          >
             {!isActive && mode === "focus" && !isEditing && (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05, x: 5 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500/10 text-orange-500 border border-orange-500/20 hover:bg-orange-500/20 transition-all font-black text-[10px] uppercase tracking-widest"
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-500/20 to-accent-500/10 text-brand-400 border border-brand-500/30 hover:border-brand-500/50 hover:bg-brand-500/30 transition-all font-black text-xs uppercase tracking-widest shadow-lg shadow-brand-500/20"
                 title="Customize Focus Time"
               >
-                <Settings2 size={14} />
+                <Settings2 size={16} />
                 Edit Focus Time
-              </button>
+              </motion.button>
             )}
             
             {isActive && (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05, x: 5 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/focus', { state: { activeTime, distractions, isActive, totalTime, backgroundImage } })}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-800/50 dark:bg-white/10 text-white/70 dark:text-white/70 hover:text-white dark:hover:text-white border border-white/10 backdrop-blur-sm transition-all hover:bg-slate-800 dark:hover:bg-white/20"
+                className="flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-slate-800/80 to-slate-900/80 dark:from-white/20 dark:to-white/10 text-white border border-white/20 hover:border-brand-400/40 backdrop-blur-md transition-all hover:shadow-lg hover:shadow-brand-500/20 font-bold text-xs uppercase tracking-widest"
                 title="Maximize Focus Mode"
               >
-                <Maximize size={16} strokeWidth={3} />
-                <span className="text-xs font-bold uppercase tracking-widest">Maximize</span>
-              </button>
+                <Maximize size={18} strokeWidth={2.5} />
+                Maximize View
+              </motion.button>
             )}
-          </div>
+
+            {isActive && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleStop}
+                className="flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-xs uppercase tracking-widest border border-red-600/50 hover:shadow-lg hover:shadow-red-500/40 transition-all"
+                title="End Session Now"
+              >
+                End Session
+              </motion.button>
+            )}
+          </motion.div>
         </div>
 
-        {/* Mini Stats (Beautiful Footer) */}
-        <div className="flex justify-between mt-12 pt-8 border-t border-white/10 relative z-10">
-          <div className="text-center">
-            <p className="text-xl font-black text-slate-800 dark:text-white">4</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sessions</p>
-          </div>
-          <div className="w-px h-10 bg-white/10" />
-          <div className="text-center">
-            <p className="text-xl font-black text-slate-800 dark:text-white">2h 10m</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Focus Time</p>
-          </div>
-        </div>
-      </div>
+        {/* Enhanced Mini Stats */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="flex justify-center gap-12 mt-14 pt-8 border-t border-white/10 relative z-10"
+        >
+          <motion.div 
+            whileHover={{ scale: 1.05 }}
+            className="text-center group cursor-pointer"
+          >
+            <motion.p 
+              animate={{ y: [0, -2, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="text-3xl font-black bg-gradient-to-br from-brand-300 to-brand-500 bg-clip-text text-transparent"
+            >
+              {Math.floor(activeTime / 60)}
+            </motion.p>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2">Active Minutes</p>
+          </motion.div>
+          <div className="w-px h-12 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+          <motion.div 
+            whileHover={{ scale: 1.05 }}
+            className={`text-center group cursor-pointer ${distractions > 0 ? 'opacity-100' : 'opacity-60'}`}
+          >
+            <motion.p 
+              animate={{ y: [0, -2, 0] }}
+              transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
+              className={`text-3xl font-black ${distractions > 0 ? 'text-red-400' : 'text-green-400'}`}
+            >
+              {distractions}
+            </motion.p>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2">Distractions</p>
+          </motion.div>
+        </motion.div>
+      </motion.div>
       
-      {/* Distraction Hint */}
+      {/* Enhanced Distraction Alert */}
       <AnimatePresence>
         {isDistracted && isActive && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="mt-8 px-6 py-3 bg-red-500/10 border border-red-500/20 rounded-full text-red-500 text-sm font-bold flex items-center gap-2"
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="mt-10 px-8 py-4 backdrop-blur-xl bg-gradient-to-r from-red-500/20 to-brand-500/10 border-2 border-red-500/40 rounded-2xl text-red-400 text-sm font-bold flex items-center gap-3 shadow-lg shadow-red-500/20"
           >
-            <span className="animate-pulse">⚠️</span> Focus lost: Tab switched or minimized
+            <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.8, repeat: Infinity }} className="text-xl">
+              ⚠️
+            </motion.span>
+            <div className="flex-1">
+              <p className="font-black text-red-300">Focus Lost!</p>
+              <p className="text-xs text-red-400/80 mt-1">Tab switched or minimized - stay focused! 💪</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

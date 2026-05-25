@@ -3,12 +3,17 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-brand-500: #f97316;
-  /* Orange-500 */
-  --color-brand-600: #ea580c;
-  /* Orange-600 */
-  --color-brand-100: #ffedd5;
-  /* Orange-100 */
+  /* Modern Violet/Purple as primary brand */
+  --color-brand-500: #7c3aed;   /* violet-600 */
+  --color-brand-600: #6d28d9;   /* violet-700 */
+  --color-brand-400: #8b5cf6;   /* violet-500 */
+  --color-brand-300: #a78bfa;   /* violet-400 */
+  --color-brand-100: #ede9fe;   /* violet-100 */
+
+  /* Cyan accent */
+  --color-accent-500: #06b6d4;  /* cyan-500 */
+  --color-accent-400: #22d3ee;  /* cyan-400 */
+  --color-accent-100: #cffafe;  /* cyan-100 */
 }
 
 /* Base Body Styles - High Contrast */
@@ -16,7 +21,7 @@ body {
   @apply bg-[#ffffff] dark:bg-[#09090b] text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased transition-colors duration-300;
 }
 
-/* Custom Scrollbar for Chat boxes and VCs */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -38,11 +43,11 @@ body {
 }
 
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-/* Background Grids for high contrast minimal look */
+/* Background Grids */
 .bg-grid-slate-100 {
   background-size: 40px 40px;
   background-image: linear-gradient(to right, #f1f5f9 1px, transparent 1px),
@@ -55,46 +60,64 @@ body {
     linear-gradient(to bottom, #1e293b 1px, transparent 1px);
 }
 
-/* High Contrast Gradient for Auth */
+/* Auth Page - Modern violet/cyan gradient mesh */
 .gradient-mesh {
   @apply bg-slate-50 border-l border-slate-200;
-  background-image: radial-gradient(at 0% 0%, hsla(28, 100%, 74%, 1) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(189, 100%, 56%, 1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(355, 100%, 93%, 1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(340, 100%, 76%, 1) 0px, transparent 50%);
+  background-image:
+    radial-gradient(at 0% 0%, hsla(263, 80%, 75%, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(186, 90%, 60%, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(280, 80%, 85%, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(200, 90%, 70%, 1) 0px, transparent 50%);
 }
 
 .dark .gradient-mesh {
   @apply bg-[#000000] border-l border-slate-800;
-  background-image: radial-gradient(at 0% 0%, hsla(28, 100%, 20%, 1) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(189, 100%, 20%, 1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(355, 100%, 10%, 1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(340, 100%, 15%, 1) 0px, transparent 50%);
+  background-image:
+    radial-gradient(at 0% 0%, hsla(263, 80%, 18%, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(186, 80%, 15%, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(280, 60%, 12%, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(200, 70%, 12%, 1) 0px, transparent 50%);
 }
 
-/* Neon Effects */
+/* === Neon Effects - Violet/Cyan === */
+.dark .shadow-neon-brand {
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.4), 0 0 30px rgba(124, 58, 237, 0.2);
+}
+
+/* Legacy alias kept for components that still use shadow-neon-orange */
 .dark .shadow-neon-orange {
-  box-shadow: 0 0 15px rgba(249, 115, 22, 0.4), 0 0 30px rgba(249, 115, 22, 0.2);
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.4), 0 0 30px rgba(124, 58, 237, 0.2);
 }
 
 .dark .shadow-neon-blue {
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), 0 0 30px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.4), 0 0 30px rgba(6, 182, 212, 0.2);
 }
 
 .dark .shadow-neon-purple {
   box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), 0 0 30px rgba(168, 85, 247, 0.2);
 }
 
+.dark .neon-border-brand {
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: inset 0 0 10px rgba(124, 58, 237, 0.2), 0 0 10px rgba(124, 58, 237, 0.2);
+}
+
+/* Legacy alias */
 .dark .neon-border-orange {
-  border-color: rgba(249, 115, 22, 0.5);
-  box-shadow: inset 0 0 10px rgba(249, 115, 22, 0.2), 0 0 10px rgba(249, 115, 22, 0.2);
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: inset 0 0 10px rgba(124, 58, 237, 0.2), 0 0 10px rgba(124, 58, 237, 0.2);
 }
 
+.dark .neon-text-brand {
+  text-shadow: 0 0 8px rgba(124, 58, 237, 0.6);
+}
+
+/* Legacy alias */
 .dark .neon-text-orange {
-  text-shadow: 0 0 8px rgba(249, 115, 22, 0.6);
+  text-shadow: 0 0 8px rgba(124, 58, 237, 0.6);
 }
 
-/* Scanning line effect for cards */
+/* Scanning line effect - violet */
 .dark .scanline::after {
   content: "";
   position: absolute;
@@ -102,7 +125,7 @@ body {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.5), rgba(6, 182, 212, 0.4), transparent);
   animation: scan 4s linear infinite;
   pointer-events: none;
 }
@@ -112,21 +135,11 @@ body {
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 @keyframes scan {
-  0% {
-    transform: translateY(-100%);
-  }
-
-  100% {
-    transform: translateY(1000%);
-  }
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
 }

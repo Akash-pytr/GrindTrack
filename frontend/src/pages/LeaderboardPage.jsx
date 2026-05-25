@@ -4,6 +4,7 @@ import { Trophy, Medal, Crown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { staggerContainer } from '../utils/animations';
 import AnimatedCounter from '../components/AnimatedCounter';
+import ThreeLeaderboardStars from '../components/three/ThreeLeaderboardStars';
 
 export default function LeaderboardPage() {
   const [users, setUsers] = useState([]);
@@ -45,7 +46,9 @@ export default function LeaderboardPage() {
   };
 
   return (
-    <div className="py-8 max-w-4xl mx-auto">
+    <div className="py-8 max-w-4xl mx-auto relative">
+      {/* Three.js falling stars background */}
+      <ThreeLeaderboardStars />
       <div className="flex items-center gap-5 mb-10">
         <motion.div 
           initial={{ scale: 0, rotate: -180, filter: 'blur(10px)' }}
@@ -90,7 +93,7 @@ export default function LeaderboardPage() {
                 whileHover={{ scale: 1.02 }}
                 key={user._id} 
                 className={`flex items-center justify-between p-6 rounded-3xl transition-all cursor-default 
-                  ${index === 0 ? 'bg-gradient-to-r from-orange-500/10 to-yellow-500/5 dark:from-orange-500/20 dark:to-yellow-500/10 border border-orange-500/20 dark:border-orange-500/60 shadow-lg shadow-orange-500/5 dark:shadow-neon-orange' : 'bg-white/40 dark:bg-[#18181b]/50 hover:bg-white dark:hover:bg-[#18181b] border border-white/50 dark:border-[#27272a] shadow-sm hover:dark:shadow-neon-blue transition-all'}`}
+                  ${index === 0 ? 'bg-gradient-to-r from-brand-500/10 to-accent-500/5 dark:from-brand-500/20 dark:to-accent-500/10 border border-brand-500/20 dark:border-brand-500/60 shadow-lg shadow-brand-500/5 dark:shadow-neon-brand' : 'bg-white/40 dark:bg-[#18181b]/50 hover:bg-white dark:hover:bg-[#18181b] border border-white/50 dark:border-[#27272a] shadow-sm hover:dark:shadow-neon-blue transition-all'}`}
               >
                 <div className="flex items-center gap-6">
                   {/* Rank Badge */}
@@ -101,7 +104,7 @@ export default function LeaderboardPage() {
                     className={`w-16 h-16 flex items-center justify-center rounded-2xl font-black text-2xl shadow-lg
                       ${index === 0 ? 'bg-gradient-to-br from-yellow-300 to-yellow-500 text-white shadow-yellow-500/40 border border-yellow-200/50' : 
                         index === 1 ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-white shadow-slate-400/30 dark:shadow-slate-600/20 border border-white/50' : 
-                        index === 2 ? 'bg-gradient-to-br from-orange-300 to-amber-600 text-white shadow-amber-600/30 dark:shadow-amber-900/20 border border-orange-200/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 transition-colors shadow-inner'}`}
+                        index === 2 ? 'bg-gradient-to-br from-brand-400 to-accent-500 text-white shadow-brand-500/30 dark:shadow-brand-900/20 border border-brand-200/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 transition-colors shadow-inner'}`}
                   >
                     {index === 0 ? <Crown size={32} fill="currentColor" strokeWidth={1} className="drop-shadow-md" /> : 
                      index === 1 ? <Medal size={32} strokeWidth={2} className="drop-shadow-sm" /> : 

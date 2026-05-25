@@ -75,7 +75,7 @@ export default function AnalyticsPage() {
         className="grid grid-cols-1 lg:grid-cols-2 gap-8"
       >
         
-        <motion.div variants={cardItem} className="bg-white/60 dark:bg-[#000000] border border-white/50 dark:border-[#27272a] dark:neon-border-orange p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group col-span-1 lg:col-span-2 transition-all duration-500 hover:shadow-2xl scanline">
+        <motion.div variants={cardItem} className="bg-white/60 dark:bg-[#000000] border border-white/50 dark:border-[#27272a] dark:neon-border-brand p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group col-span-1 lg:col-span-2 transition-all duration-500 hover:shadow-2xl scanline">
           <div className="flex justify-between items-center mb-8">
             <div>
               <h3 className="text-xl font-black text-slate-800 dark:text-white transition-colors tracking-tight">Weekly Progress Trace</h3>
@@ -125,7 +125,7 @@ export default function AnalyticsPage() {
           </div>
         </motion.div>
 
-        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-white/60 dark:bg-[#000000] border border-white/50 dark:border-[#27272a] dark:neon-border-orange p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-500 scanline">
+        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-white/60 dark:bg-[#000000] border border-white/50 dark:border-[#27272a] dark:neon-border-brand p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-500 scanline">
           <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white mb-6 border-b border-slate-200/50 dark:border-slate-800/50 pb-4 transition-colors">Today's Breakdown</h3>
           
           <div className="space-y-8 mt-6">
@@ -161,7 +161,7 @@ export default function AnalyticsPage() {
           </div>
         </motion.div>
 
-        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-white/60 dark:bg-[#000000] border border-white/50 dark:border-[#27272a] dark:neon-border-orange p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-500 flex flex-col items-center justify-center scanline">
+        <motion.div variants={cardItem} whileHover={{ y: -5 }} className="bg-white/60 dark:bg-[#000000] border border-white/50 dark:border-[#27272a] dark:neon-border-brand p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-500 flex flex-col items-center justify-center scanline">
           <h3 className="text-xl font-black tracking-tight text-slate-800 dark:text-white mb-6 w-full text-center border-b border-slate-200/50 dark:border-slate-800/50 pb-4 transition-colors">Distraction Insights</h3>
           
           <div className="flex items-center justify-center mt-6 flex-1 w-full relative">

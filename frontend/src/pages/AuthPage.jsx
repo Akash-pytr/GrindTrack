@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ThreeAuthScene from '../components/three/ThreeAuthScene';
+import BrandingScene from '../components/three/BrandingScene';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -29,120 +31,224 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fce5df] dark:bg-[#000000] flex p-4 items-center justify-center transition-colors duration-300">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.6, type: 'spring', bounce: 0.3 }}
-        className="w-full max-w-5xl bg-white dark:bg-[#000000] rounded-3xl shadow-2xl flex overflow-hidden min-h-[600px] border border-transparent dark:border-[#27272a] dark:neon-border-orange transition-colors duration-300 scanline"
+    <div
+      className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      style={{ background: '#0a0a0a' }}
+    >
+      {/* Full-screen glitter background */}
+      <div className="fixed inset-0 z-0">
+        <ThreeAuthScene />
+      </div>
+
+      {/* Two-panel card */}
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.65, type: 'spring', bounce: 0.2 }}
+        className="relative z-10 flex w-full overflow-hidden"
+        style={{
+          maxWidth: '880px',
+          minHeight: '520px',
+          borderRadius: '20px',
+          border: '1px solid rgba(255,255,255,0.09)',
+          boxShadow: '0 0 80px rgba(0,0,0,0.8), 0 2px 0 rgba(255,255,255,0.05) inset',
+        }}
       >
-        
-        {/* Left Form Side */}
-        <div className="w-full lg:w-1/2 p-12 lg:p-16 flex flex-col justify-center">
+
+        {/* ── LEFT: Login form ── */}
+        <div
+          className="flex flex-col justify-center w-full md:w-[48%] px-10 py-12 shrink-0"
+          style={{
+            background: 'rgba(6, 6, 9, 0.96)',
+            borderRight: '1px solid rgba(255,255,255,0.07)',
+          }}
+        >
+          {/* Subtitle + heading */}
           <div className="mb-8">
-            <h2 className="text-brand-500 font-semibold text-sm tracking-wider uppercase mb-2">Welcome Back</h2>
-            <h1 className="text-4xl font-extrabold text-slate-800 dark:text-white transition-colors">
+            <p
+              className="text-xs font-bold tracking-widest uppercase mb-2"
+              style={{ color: '#f97316' }}
+            >
+              {isLogin ? 'Welcome Back' : 'Get Started'}
+            </p>
+            <h1 className="text-4xl font-extrabold text-white tracking-tight leading-none">
               {isLogin ? 'Login' : 'Create Account'}
             </h1>
           </div>
 
+          {/* Error */}
           <AnimatePresence mode="wait">
             {error && (
-              <motion.div 
+              <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 p-4 rounded-xl mb-6 text-sm overflow-hidden"
+                className="overflow-hidden mb-5"
               >
-                {error}
+                <div className="bg-red-500/10 border border-red-500/25 text-red-400 p-3.5 rounded-xl text-sm">
+                  {error}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             <AnimatePresence mode="popLayout">
               {!isLogin && (
                 <motion.div
-                  initial={{ opacity: 0, y: -10, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  exit={{ opacity: 0, y: -10, height: 0 }}
+                  key="name"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1.5 transition-colors">Name</label>
+                  <label className="block text-sm font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                    Name
+                  </label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-slate-800 dark:text-white focus:ring-2 focus:ring-brand-500 focus:bg-white dark:focus:bg-slate-900 focus:border-transparent outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     placeholder="John Doe"
+                    className="w-full rounded-xl px-4 py-3.5 text-sm font-medium outline-none transition-all"
+                    style={{
+                      background: 'rgba(240,240,248,0.92)',
+                      color: '#111',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                    }}
+                    onFocus={(e) => (e.target.style.boxShadow = '0 0 0 2px #f97316')}
+                    onBlur={(e) => (e.target.style.boxShadow = 'none')}
                   />
                 </motion.div>
               )}
             </AnimatePresence>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1.5 transition-colors">Email</label>
+              <label className="block text-sm font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                Email
+              </label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-slate-800 dark:text-white focus:ring-2 focus:ring-brand-500 focus:bg-white dark:focus:bg-slate-900 focus:border-transparent outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 placeholder="you@example.com"
+                className="w-full rounded-xl px-4 py-3.5 text-sm font-medium outline-none transition-all"
+                style={{
+                  background: 'rgba(240,240,248,0.92)',
+                  color: '#111',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                }}
+                onFocus={(e) => (e.target.style.boxShadow = '0 0 0 2px #f97316')}
+                onBlur={(e) => (e.target.style.boxShadow = 'none')}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1.5 transition-colors">Password</label>
+              <label className="block text-sm font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                Password
+              </label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-slate-800 dark:text-white focus:ring-2 focus:ring-brand-500 focus:bg-white dark:focus:bg-slate-900 focus:border-transparent outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 placeholder="••••••••"
+                className="w-full rounded-xl px-4 py-3.5 text-sm font-medium outline-none transition-all"
+                style={{
+                  background: 'rgba(240,240,248,0.92)',
+                  color: '#111',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                }}
+                onFocus={(e) => (e.target.style.boxShadow = '0 0 0 2px #f97316')}
+                onBlur={(e) => (e.target.style.boxShadow = 'none')}
               />
             </div>
 
             <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               type="submit"
-              className="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold p-4 rounded-xl transition-colors shadow-lg shadow-brand-500/30 dark:shadow-neon-orange mt-8"
+              className="w-full font-bold py-4 rounded-xl text-white text-base mt-2"
+              style={{
+                background: '#f97316',
+                boxShadow: '0 0 28px rgba(249,115,22,0.4)',
+              }}
             >
               {isLogin ? 'Sign In' : 'Register Now'}
             </motion.button>
           </form>
 
-          <div className="mt-8 text-center text-slate-500 dark:text-slate-400 text-sm font-medium transition-colors">
-            {isLogin ? "Don't have an account yet? " : "Already have an account? "}
+          <p className="mt-5 text-center text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            {isLogin ? "Don't have an account yet? " : 'Already have an account? '}
             <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-brand-600 dark:text-brand-500 hover:text-brand-500 dark:hover:text-brand-400 font-bold ml-1 transition-colors"
+              onClick={() => { setIsLogin(!isLogin); setError(''); }}
+              className="font-bold transition-colors"
+              style={{ color: '#f97316' }}
+              onMouseEnter={(e) => (e.target.style.color = '#fb923c')}
+              onMouseLeave={(e) => (e.target.style.color = '#f97316')}
             >
               {isLogin ? 'Register for free' : 'Sign In'}
             </button>
-          </div>
+          </p>
         </div>
 
-        {/* Right Gradient Side */}
-        <div className="hidden lg:flex w-1/2 gradient-mesh p-12 flex-col justify-between items-end relative overflow-hidden transition-all duration-700">
-          <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-[2px] transition-colors"></div>
-          
-          <div className="relative z-10 w-full flex justify-end">
-            <div className="flex items-center gap-2 bg-white/20 dark:bg-[#000000]/40 backdrop-blur-md px-4 py-2 rounded-full text-white font-semibold shadow-sm dark:shadow-neon-blue transition-colors border border-transparent dark:border-blue-500/50">
-              <CheckCircle className="w-5 h-5 text-white" />
-              <span>GrindTrack</span>
+        {/* ── RIGHT: Branding panel ── */}
+        <div
+          className="hidden md:flex flex-col w-[52%] relative overflow-hidden"
+          style={{ background: 'rgba(2, 2, 5, 0.6)' }}
+        >
+          {/* GrindTrack pill — top center */}
+          <div className="flex justify-center pt-6">
+            <div
+              className="flex items-center gap-2 px-4 py-2 rounded-full"
+              style={{
+                background: 'rgba(25,25,35,0.85)',
+                border: '1px solid rgba(255,255,255,0.13)',
+                backdropFilter: 'blur(12px)',
+              }}
+            >
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: '#f97316' }}
+              >
+                <CheckCircle className="text-white w-3 h-3" />
+              </div>
+              <span className="text-white text-sm font-bold tracking-tight">GrindTrack</span>
             </div>
           </div>
 
-          <div className="relative z-10 text-right text-white">
-            <h2 className="text-4xl font-extrabold mb-4 drop-shadow-lg leading-tight">Focus.<br/>Track.<br/>Achieve.</h2>
-            <p className="text-white/80 dark:text-white/70 max-w-xs ml-auto font-medium transition-colors">Build a powerful habit of undisrupted learning and track your performance.</p>
+          {/* 3D knot + text side by side */}
+          <div className="flex-1 flex items-center justify-center px-6 gap-2">
+            {/* 3D canvas */}
+            <div className="w-[220px] h-[220px] shrink-0">
+              <BrandingScene />
+            </div>
+
+            {/* Tagline text */}
+            <div className="flex-1">
+              <h2
+                className="font-black leading-none tracking-tight"
+                style={{ fontSize: '2.3rem', color: '#ffffff' }}
+              >
+                Focus.<br />Track.<br />Achieve.
+              </h2>
+              <p
+                className="mt-3 text-sm leading-relaxed"
+                style={{ color: 'rgba(255,255,255,0.45)' }}
+              >
+                Build a powerful<br />
+                habit of<br />
+                undisrupted<br />
+                learning and track<br />
+                your performance.
+              </p>
+            </div>
           </div>
         </div>
-        
+
       </motion.div>
     </div>
   );
