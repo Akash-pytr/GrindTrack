@@ -479,7 +479,7 @@ export default function RoomView() {
                       ? 'bg-slate-500/10 text-slate-400 border border-slate-500/20 cursor-not-allowed opacity-50' 
                       : !isCameraOn 
                         ? 'bg-slate-500/10 text-slate-500 border border-slate-500/20' 
-                        : 'bg-brand-500/10 text-brand-500 border border-brand-500/20 shadow-neon-orange'
+                        : 'bg-brand-500/10 text-brand-500 border border-brand-500/20 shadow-neon-brand'
                   }`}
                >
                   {isCameraOn ? <Video size={20} /> : <VideoOff size={20} />}
@@ -541,7 +541,7 @@ export default function RoomView() {
                     />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-                     <div className={`w-20 h-20 rounded-full flex items-center justify-center font-black text-3xl text-white bg-brand-500 shadow-neon-orange`}>
+                     <div className={`w-20 h-20 rounded-full flex items-center justify-center font-black text-3xl text-white bg-brand-500 shadow-neon-brand`}>
                         {user?.name.charAt(0).toUpperCase()}
                      </div>
                      <span className="text-slate-400 font-bold uppercase tracking-widest text-xs">You (Mic Only)</span>
@@ -586,9 +586,9 @@ export default function RoomView() {
 
           {/* Floating Focus Timer */}
           <div className="absolute top-6 right-6 flex flex-col items-end gap-2 z-20">
-            <div className={`flex items-center gap-4 ${isCameraOn || isScreenSharing ? 'bg-white/90 dark:bg-black/80' : 'bg-orange-500/10'} backdrop-blur-md px-6 py-3 rounded-2xl border border-[#e2e8f0] dark:border-[#27272a] shadow-xl transition-all duration-500`}>
-               <div className={`w-2 h-2 rounded-full ${isCameraOn || isScreenSharing ? 'bg-emerald-500 animate-pulse shadow-neon-blue' : 'bg-orange-500 shadow-neon-orange'} `}></div>
-               <div className={`text-2xl font-black tabular-nums tracking-tight ${isCameraOn || isScreenSharing ? 'text-slate-800 dark:text-white dark:neon-text-orange' : 'text-orange-500'}`}>
+            <div className={`flex items-center gap-4 ${isCameraOn || isScreenSharing ? 'bg-white/90 dark:bg-black/80' : 'bg-brand-500/10'} backdrop-blur-md px-6 py-3 rounded-2xl border border-[#e2e8f0] dark:border-[#27272a] shadow-xl transition-all duration-500`}>
+               <div className={`w-2 h-2 rounded-full ${isCameraOn || isScreenSharing ? 'bg-emerald-500 animate-pulse shadow-neon-blue' : 'bg-brand-500 shadow-neon-brand'} `}></div>
+               <div className={`text-2xl font-black tabular-nums tracking-tight ${isCameraOn || isScreenSharing ? 'text-slate-800 dark:text-white dark:neon-text-brand' : 'text-brand-500'}`}>
                   {formatTime(seconds)}
                </div>
             </div>
@@ -596,7 +596,7 @@ export default function RoomView() {
                <motion.div 
                  initial={{ opacity: 0, x: 20 }}
                  animate={{ opacity: 1, x: 0 }}
-                 className="text-[10px] font-black text-orange-500 uppercase tracking-widest bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-orange-500/20"
+                 className="text-[10px] font-black text-brand-400 uppercase tracking-widest bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-brand-500/20"
                >
                  Turn on camera or screen to count time
                </motion.div>
@@ -618,7 +618,7 @@ export default function RoomView() {
       </div>
 
       {/* Right Area - Chat & Users Sidebar */}
-      <div className="w-[380px] bg-[#ffffff] dark:bg-[#000000] border border-[#e2e8f0] dark:border-[#27272a] rounded-xl shadow-sm flex flex-col overflow-hidden transition-all duration-500 dark:neon-border-orange">
+      <div className="w-[380px] bg-[#ffffff] dark:bg-[#000000] border border-[#e2e8f0] dark:border-[#27272a] rounded-xl shadow-sm flex flex-col overflow-hidden transition-all duration-500 dark:neon-border-brand">
         
         {/* Sidebar Tabs */}
         <div className="flex border-b border-[#e2e8f0] dark:border-[#27272a] bg-slate-50 dark:bg-[#09090b]">
